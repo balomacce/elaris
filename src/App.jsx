@@ -1012,21 +1012,72 @@ function GameScreen({ user, onUpdate, onLogout }) {
   }
 
   async function confirmar() {
-    if(!dado||!acao.trim()||submitting) return;
+    if(!acao.trim()||submitting) return;
     setSubmitting(true);
+    const inimigosVivos = (user.inimigos||[]).filter(e=>e.vivo);
+    const emCombate = inimigosVivos.length>0 && !emVarnok;
+    const sys = `Você é o Mestre do RPG ELARIS. Interprete QUALQUER ação ou mensagem do jogador — exploração, conversa, combate, descanso, compra, pergunta, emoção, besteira. Nunca recuse. Sempre narre algo interessante em português com estilo sombrio e imersivo.
+
+MUNDO: Elaris pós-Fratura. Monstros, Essência, poderes, facções.
+REGIÃO: ${regiao.emoji} ${regiao.nome} — ${regiao.desc}
+PERSONAGEM: ${h.nome} (${h.classe} Nv.${h.nivel||1}) HP:${h.hp}/${h.maxHp} EN:${h.en}/${h.maxEn} Ouro:${h.ouro} Rank:${RANK_EMOJI[h.rank]}
+${emVarnok?`VARNOK — NPCs disponíveis:
+• Maren (Guilda): missões, informações, contratos
+• Durk (Ferreiro): forja itens, ranzinza, competente
+• Taverna do Osso: rumores, bebidas, viajantes
+• Templo Abandonado: lore dos deuses, mistério
+• Mercado: compras, vendedores`:""}
+${emCombate?`COMBATE ATIVO: ${inimigosVivos.map(e=>`${e.emoji}${e.nome} HP:${e.hp}/${e.maxHp}`).join(" | ")}`:""}
+${dado?`DADO d20: ${dado} (${dadoLabel}) — use isso para determinar o resultado`:"SEM DADO — interprete livremente sem resultado de teste"}
+EQUIPAMENTOS: Arma:${h.equipamentos?.arma?ITENS_DB[h.equipamentos.arma]?.nome||"nenhuma":"nenhuma"} Armadura:${h.equipamentos?.armadura?ITENS_DB[h.equipamentos.armadura]?.nome||"nenhuma":"nenhuma"}
+HISTÓRICO RECENTE: ${(user.log||[]).slice(0,3).join(" | ")||"nenhum"}
+
+REGRAS DE INTERPRETAÇÃO:
+- Ação de combate com dado: aplique resultado (1-5=falha,6-10=ruim,11-15=normal,16-19=bom,20=crítico)
+- Conversa com NPC: interprete o NPC com personalidade real
+- Exploração: descreva o ambiente, crie descobertas, tensão
+- Descanso/curar: pode curar HP se fizer sentido
+- Compra/venda: Durk e mercadores têm preços e personalidade
+- Pergunta sobre o mundo: responda com lore do ELARIS
+- Qualquer outra coisa: improvise com criatividade
+- Nunca quebre a imersão, nunca diga que não pode interpretar
+
+Responda SOMENTE com JSON sem markdown:
+{"narracao":"narração imersiva de 2-4 parágrafos","ganhouOuro":0,"perdeuOuro":0,"curaHeroi":0,"danoHeroi":0,"custoEnergia":0,"rankPts":0,"maestriaPts":0,"iniciouCombate":false,"novoInimigo":null}`;
+
     try {
-      const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:800,
-          system:`Você é o Mestre do RPG ELARIS. Narre em português — frases curtas, estilo sombrio. REGIÃO: ${regiao.nome}. PERSONAGEM: ${h.nome} HP:${h.hp}/${h.maxHp} EN:${h.en}/${h.maxEn}. ${emVarnok?"VARNOK: Maren, Durk, Taverna":"Exploração livre."} AÇÃO: "${acao}" d20:${dado}(${dadoLabel}). Responda JSON: {"narracao":"texto","ganhouOuro":0,"curaHeroi":0}`,
-          messages:[{role:"user",content:acao}]})});
+      const res=await fetch("https://api.anthropic.com/v1/messages",{
+        method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:sys,messages:[{role:"user",content:acao}]})
+      });
       const data=await res.json();
       const txt=data.content?.find(b=>b.type==="text")?.text||"{}";
       let result={}; try{ result=JSON.parse(txt.replace(/```json|```/g,"").trim()); }catch(e){ result={narracao:txt}; }
-      setNarracao(result.narracao||"O Mestre observa.");
+
+      const narr = result.narracao||"O Mestre observa em silêncio.";
+      setNarracao(narr);
       let newH={...h};
-      if(result.ganhouOuro>0) newH={...newH,ouro:(newH.ouro||0)+result.ganhouOuro};
-      if(result.curaHeroi>0) newH={...newH,hp:Math.min(newH.maxHp,newH.hp+result.curaHeroi)};
-      const newUser={...user,hero:newH,narracao:result.narracao||"",lastSeen:Date.now()};
+      let newLog=[...(user.log||[])];
+
+      if(result.ganhouOuro>0){ newH={...newH,ouro:(newH.ouro||0)+result.ganhouOuro}; newLog=[`💰 +${result.ganhouOuro} ouros`,...newLog.slice(0,29)]; }
+      if(result.perdeuOuro>0){ newH={...newH,ouro:Math.max(0,(newH.ouro||0)-result.perdeuOuro)}; newLog=[`💸 -${result.perdeuOuro} ouros`,...newLog.slice(0,29)]; }
+      if(result.curaHeroi>0){ newH={...newH,hp:Math.min(newH.maxHp,newH.hp+result.curaHeroi)}; newLog=[`💚 +${result.curaHeroi}❤️ curado`,...newLog.slice(0,29)]; }
+      if(result.danoHeroi>0){ newH={...newH,hp:Math.max(0,newH.hp-result.danoHeroi)}; newLog=[`💔 -${result.danoHeroi}❤️ dano`,...newLog.slice(0,29)]; }
+      if(result.custoEnergia>0) newH={...newH,en:Math.max(0,newH.en-result.custoEnergia)};
+      if(result.rankPts>0){
+        let rpts=(newH.rankPts||0)+result.rankPts; let rank=newH.rank;
+        if(rpts>=(RANK_PTS[rank]||5)&&RANKS.indexOf(rank)<RANKS.length-1){ rank=RANKS[RANKS.indexOf(rank)+1]; rpts=0; newLog=[`🎉 Subiu para ${RANK_EMOJI[rank]}!`,...newLog.slice(0,29)]; }
+        newH={...newH,rank,rankPts:rpts};
+      }
+      if(result.maestriaPts>0) newH={...newH,maestria:(newH.maestria||1)+result.maestriaPts};
+
+      // Iniciou combate via narrativa
+      if(result.iniciouCombate&&!emVarnok){
+        const mob = result.novoInimigo ? result.novoInimigo : sortearInimigo(h.regiao,false);
+        if(mob) setTimeout(()=>setBatalhaAtiva(mob),1500);
+      }
+
+      const newUser={...user,hero:newH,log:newLog,narracao:narr,lastSeen:Date.now()};
       await saveUser(user.username,newUser); onUpdate(newUser); setAcao(""); setDado(null);
     } catch(e){ setNarracao("O Mestre hesita. Tente novamente."); }
     setSubmitting(false);
@@ -1099,8 +1150,8 @@ function GameScreen({ user, onUpdate, onLogout }) {
           style={{width:"100%",minHeight:70,background:T.surface,border:`1px solid ${T.border}`,borderRadius:9,color:T.text,fontFamily:"Georgia,serif",fontSize:12,padding:9,resize:"vertical",outline:"none",boxSizing:"border-box",marginBottom:7}}/>
         <div style={{display:"flex",flexWrap:"wrap",alignItems:"center",gap:7,marginBottom:8}}>
           <button onClick={rollDice} disabled={submitting} style={{background:T.gold,border:"none",borderRadius:7,color:"#07070c",fontWeight:700,fontSize:12,padding:"7px 13px",cursor:"pointer",fontFamily:"inherit"}}>🎲 d20</button>
-          <button onClick={confirmar} disabled={!dado||!acao.trim()||submitting}
-            style={{background:dado&&acao.trim()&&!submitting?"#1a2e1a":"#111",border:`1px solid ${dado&&acao.trim()&&!submitting?T.green:"#222"}`,color:dado&&acao.trim()&&!submitting?T.green:"#333",borderRadius:7,fontWeight:700,fontSize:12,padding:"7px 13px",cursor:dado&&acao.trim()&&!submitting?"pointer":"default",fontFamily:"inherit"}}>
+          <button onClick={confirmar} disabled={!acao.trim()||submitting}
+            style={{background:acao.trim()&&!submitting?"#1a2e1a":"#111",border:`1px solid ${acao.trim()&&!submitting?T.green:"#222"}`,color:acao.trim()&&!submitting?T.green:"#333",borderRadius:7,fontWeight:700,fontSize:12,padding:"7px 13px",cursor:acao.trim()&&!submitting?"pointer":"default",fontFamily:"inherit"}}>
             {submitting?"⏳":"✅ Confirmar"}
           </button>
           {dado&&<div style={{display:"flex",alignItems:"center",gap:5}}>

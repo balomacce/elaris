@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const T = {
   bg:"#07070c", surface:"#0e0e18", border:"#1e1e2c",
@@ -8,268 +8,227 @@ const T = {
 };
 
 // ══════════════════════════════════════════════════════════
-// HISTÓRIA PRINCIPAL — 6 CAPÍTULOS
+// INIMIGOS POR ÁREA
 // ══════════════════════════════════════════════════════════
-const HISTORIA = [
-  {
-    id: 0,
-    titulo: "Prólogo — A Cicatriz do Céu",
-    regiaoNecessaria: "varnok",
-    rankNecessario: "bronze",
-    emoji: "🌑",
-    cor: "#c9a96e",
-    cena: `A cicatriz no céu voltou a brilhar.
-
-Três noites seguidas. Sempre à meia-noite. Uma luz pálida que corta o horizonte de leste a oeste e desaparece antes que alguém possa ter certeza do que viu.
-
-Maren, da Guilda, não costuma chamar mercenários para conversas. Mas essa manhã ela fechou a porta do escritório.
-
-**"Não é a primeira vez que isso acontece,"** ela disse, sem rodeios. **"Mas é a primeira vez que acontece com essa frequência. Algo está acordando. E eu preciso saber o que é antes que a cidade perceba."**
-
-Ela colocou três fichas na mesa. Uma para cada um de vocês.
-
-**"Investigação. Sem prazo. Sem testemunhas."**`,
-    escolhas: [
-      { id:"aceitar", texto:"Aceitar a missão", resultado:"Vocês aceitaram. A história começou.", efeito:"historiaPts+1" },
-      { id:"questionar", texto:"Questionar Maren sobre o que ela sabe", resultado:"Maren revelou mais: a cicatriz pulsou pela primeira vez há 30 anos — no dia da Fratura.", efeito:"lore+1" },
-    ],
-    proximoCapitulo: 1,
-  },
-  {
-    id: 1,
-    titulo: "Capítulo I — O Templo Esquecido",
-    regiaoNecessaria: "lunaris",
-    rankNecessario: "bronze",
-    emoji: "🌲",
-    cor: "#5ab870",
-    cena: `A Floresta de Lunaris não é silenciosa à noite.
-
-Mas essa noite está.
-
-Nem pássaro. Nem vento. Só a névoa se movendo devagar entre as árvores, como se respirasse.
-
-O templo estava no mapa antigo que Maren deu. Marcado com um símbolo que nenhum de vocês reconheceu. Agora, na frente dele, o símbolo faz mais sentido — é o mesmo da cicatriz no céu.
-
-A porta está aberta.
-
-Não arrombada. Não forçada.
-
-**Aberta.**
-
-Como se alguém soubesse que vocês viriam.`,
-    escolhas: [
-      { id:"entrar", texto:"Entrar com cautela", resultado:"Vocês encontraram marcas no chão — rituais recentes. Alguém esteve aqui dias atrás.", efeito:"pista+1" },
-      { id:"examinar", texto:"Examinar o exterior primeiro", resultado:"Uma marca na pedra: o símbolo dos Filhos da Fratura. Eles chegaram primeiro.", efeito:"faccao_rival+1" },
-    ],
-    proximoCapitulo: 2,
-  },
-  {
-    id: 2,
-    titulo: "Capítulo II — O Nome Proibido",
-    regiaoNecessaria: "lunaris",
-    rankNecessario: "prata",
-    emoji: "📜",
-    cor: "#8888e8",
-    cena: `Dentro do templo, as paredes falam.
-
-Não metaforicamente. Literalmente — as inscrições nas pedras vibram quando vocês passam. Uma frequência baixa, quase inaudível, que você sente mais no peito do que nos ouvidos.
-
-No centro, um altar. E no altar, um livro.
-
-Não um livro comum. As páginas são feitas de algo que parece pele — mas não é animal. E o título, gravado na capa com letras que parecem ter sido escritas por alguém com as mãos tremendo:
-
-**VAEL.**
-
-Nenhum de vocês conhece esse nome.
-
-Mas quando Fuboka toca a capa, o Cavaleiro das Almas recua. Pela primeira vez desde que foi invocado, ele recua.`,
-    escolhas: [
-      { id:"abrir", texto:"Abrir o livro", resultado:"Visões. Fragmentadas. A Fratura não foi um acidente — foi um ritual. E Vael estava no centro.", efeito:"lore+2" },
-      { id:"fechar", texto:"Não tocar. Levar o livro para Maren", resultado:"Maren pálida. Ela conhece o nome. E agora deve uma explicação.", efeito:"reputacao_guilda+1" },
-    ],
-    proximoCapitulo: 3,
-  },
-  {
-    id: 3,
-    titulo: "Capítulo III — A Ordem Sabe",
-    regiaoNecessaria: "vale",
-    rankNecessario: "prata",
-    emoji: "⚔️",
-    cor: "#d94f4f",
-    cena: `A Ordem de Ferro estava esperando.
-
-Não emboscada — pior. Eles estavam esperando **educadamente**. Capitão Revan, de uniforme, com dois soldados atrás dele e um sorriso que não chegava aos olhos.
-
-**"Ouvi dizer que encontraram algo interessante na floresta,"** ele disse. **"A Ordem gostaria de... colaborar."**
-
-Nenhum de vocês acredita na palavra colaborar quando ela sai da boca dele.
-
-Mas ele sabe sobre Vael. Isso fica claro nas próximas palavras:
-
-**"Vael não era um homem. Era um título. E o próximo a recebê-lo já foi escolhido."**
-
-Ele esperou. Observou as reações.
-
-**"Não por nós,"** ele adicionou, quase como uma concessão. **"Pelos Filhos."**`,
-    escolhas: [
-      { id:"aliar", texto:"Fingir colaborar com a Ordem", resultado:"Acesso a informações militares. Mas a Ordem vai cobrar isso mais tarde.", efeito:"ordem+1" },
-      { id:"recusar", texto:"Recusar abertamente", resultado:"Revan não ficou surpreso. Ele esperava isso. 'Quando mudarem de ideia, já sabem onde nos encontrar.'", efeito:"ordem-1" },
-    ],
-    proximoCapitulo: 4,
-  },
-  {
-    id: 4,
-    titulo: "Capítulo IV — O Ritual da Fratura",
-    regiaoNecessaria: "deserto",
-    rankNecessario: "ouro",
-    emoji: "🏜️",
-    cor: "#d97c30",
-    cena: `O Deserto Cinzento esconde o que o mundo não quer lembrar.
-
-Sob a areia, a três horas de caminhada do Oásis Secreto, existe uma câmara. Não construída — **escavada**. Como se algo enorme tivesse saído de dentro da terra há muito tempo e deixado um buraco para trás.
-
-No centro da câmara: o diagrama do ritual.
-
-Trinta anos atrás, seis pessoas se reuniram aqui. Cada uma representando um dos deuses. Cada uma cedendo sua Essência voluntariamente.
-
-O ritual funcionou. A Fratura aconteceu.
-
-Mas o objetivo não era destruir. Era **invocar**.
-
-E o que tentaram invocar — Vael — não chegou completamente.
-
-**Só uma parte dele atravessou.**
-
-A outra parte ainda está do outro lado. Esperando. E a cicatriz no céu é a costura que está se desfazendo.`,
-    escolhas: [
-      { id:"destruir", texto:"Destruir o diagrama", resultado:"A câmara treme. Algo do outro lado percebeu. A costura ficou mais fina.", efeito:"fratura+1" },
-      { id:"estudar", texto:"Copiar o diagrama antes de destruir", resultado:"Vocês têm o ritual completo. Isso pode ser usado para fechar a Fratura — ou abrí-la.", efeito:"conhecimento+1" },
-    ],
-    proximoCapitulo: 5,
-  },
-  {
-    id: 5,
-    titulo: "Capítulo V — O Epicentro",
-    regiaoNecessaria: "ruinas",
-    rankNecessario: "ouro",
-    emoji: "💀",
-    cor: "#a78bfa",
-    cena: `As Ruínas da Fratura não parecem um lugar.
-
-Parecem uma **ferida**.
-
-O ar vibra. A luz dobra. Sons chegam de direções que não existem. E no centro de tudo — onde a cicatriz do céu aponta quando você a segue com os olhos — existe uma fenda.
-
-Não grande. Do tamanho de uma porta.
-
-Mas do outro lado dela, algo se move.
-
-Vael — ou o que resta de Vael depois de trinta anos preso entre dois mundos — olha para vocês com olhos que são todos ao mesmo tempo: fogo, gelo, sombra, luz.
-
-Ele não ataca.
-
-Ele **fala**.
-
-**"Eu não vim destruir. Eu vim completar o que foi começado. E vocês,"** — uma pausa, quase humana — **"vocês têm exatamente o que eu preciso."**
-
-Silêncio.
-
-**"A escolha é de vocês. Sempre foi."**`,
-    escolhas: [
-      { id:"fechar", texto:"Fechar a Fratura — sacrificar a Essência do grupo", resultado:"A fenda se fecha. Vael desaparece. A cicatriz some. O mundo respira. Mas os poderes de vocês nunca serão os mesmos.", efeito:"final_luz" },
-      { id:"negociar", texto:"Negociar com Vael", resultado:"Vael cumpre o acordo. A Fratura permanece — controlada. O mundo muda. Vocês mudaram com ele.", efeito:"final_equilibrio" },
-      { id:"combate", texto:"Lutar contra Vael", resultado:"A batalha mais difícil que já travaram. Vael não é invencível — mas o custo é alto.", efeito:"final_guerra" },
-    ],
-    proximoCapitulo: null,
-  },
-];
+const INIMIGOS_POR_AREA = {
+  lunaris: [
+    { id:"lobo_cinza", nome:"Lobo Cinza", emoji:"🐺", tipo:"comum", hp:3, maxHp:3, dano:0.5, exp:10, ouro:5,
+      drops:[{id:"pele_lobo",nome:"Pele de Lobo",emoji:"🟫",chance:0.6},{id:"garra_lobo",nome:"Garra de Lobo",emoji:"🦴",chance:0.4}] },
+    { id:"lobo_negro", nome:"Lobo Negro", emoji:"🐺", tipo:"elite", hp:5, maxHp:5, dano:1, exp:25, ouro:12,
+      drops:[{id:"garra_lobo",nome:"Garra de Lobo",emoji:"🦴",chance:0.7},{id:"fang_negro",nome:"Presa Negra",emoji:"🖤",chance:0.3}] },
+    { id:"espirito_névoa", nome:"Espírito da Névoa", emoji:"👻", tipo:"comum", hp:2, maxHp:2, dano:0.5, exp:12, ouro:8,
+      drops:[{id:"essencia_névoa",nome:"Essência de Névoa",emoji:"🌫️",chance:0.5}] },
+    { id:"arainha_sombra", nome:"Aranha das Sombras", emoji:"🕷️", tipo:"comum", hp:2, maxHp:2, dano:1, exp:15, ouro:6,
+      drops:[{id:"veneno_aranha",nome:"Veneno de Aranha",emoji:"☠️",chance:0.5},{id:"seda_sombra",nome:"Seda das Sombras",emoji:"🕸️",chance:0.3}] },
+    { id:"cervo_corrompido", nome:"Cervo Corrompido", emoji:"🦌", tipo:"elite", hp:6, maxHp:6, dano:1.5, exp:30, ouro:15,
+      drops:[{id:"chifre_corrompido",nome:"Chifre Corrompido",emoji:"🟣",chance:0.4},{id:"carne_corrompida",nome:"Carne Corrompida",emoji:"🩸",chance:0.6}] },
+    { id:"alpha_lunaris", nome:"Lobo Alfa de Lunaris", emoji:"🐺", tipo:"boss", hp:20, maxHp:20, dano:2, exp:150, ouro:80, fase:1, maxFase:2,
+      drops:[{id:"essencia_alfa",nome:"Essência do Alfa",emoji:"⭐",chance:1},{id:"pelagem_alfa",nome:"Pelagem do Alfa",emoji:"🟤",chance:0.8},{id:"coracao_alfa",nome:"Coração do Alfa",emoji:"❤️",chance:0.4}] },
+  ],
+  vale: [
+    { id:"guerreiro_ferro", nome:"Guerreiro de Ferro", emoji:"⚔️", tipo:"comum", hp:5, maxHp:5, dano:1, exp:20, ouro:10,
+      drops:[{id:"fragmento_ferro",nome:"Fragmento de Ferro",emoji:"🔩",chance:0.6},{id:"emblema_ordem",nome:"Emblema da Ordem",emoji:"🛡️",chance:0.2}] },
+    { id:"arqueiro_carmesim", nome:"Arqueiro Carmesim", emoji:"🏹", tipo:"comum", hp:3, maxHp:3, dano:1.5, exp:22, ouro:12,
+      drops:[{id:"flecha_carmesim",nome:"Flecha Carmesim",emoji:"🏹",chance:0.7}] },
+    { id:"cavaleiro_ordem", nome:"Cavaleiro da Ordem", emoji:"🗡️", tipo:"elite", hp:8, maxHp:8, dano:1.5, exp:45, ouro:25,
+      drops:[{id:"espada_ordem",nome:"Espada da Ordem",emoji:"⚔️",chance:0.3},{id:"armadura_ferro",nome:"Armadura de Ferro",emoji:"🛡️",chance:0.2}] },
+    { id:"berserker_vale", nome:"Berserker do Vale", emoji:"💢", tipo:"elite", hp:7, maxHp:7, dano:2, exp:50, ouro:20,
+      drops:[{id:"machado_sangue",nome:"Machado de Sangue",emoji:"🪓",chance:0.35}] },
+    { id:"golem_pedra", nome:"Golem de Pedra", emoji:"🪨", tipo:"elite", hp:12, maxHp:12, dano:1.5, exp:60, ouro:30,
+      drops:[{id:"nucleo_pedra",nome:"Núcleo de Pedra",emoji:"🪨",chance:0.5},{id:"runa_antiga",nome:"Runa Antiga",emoji:"🔮",chance:0.2}] },
+    { id:"comandante_revan", nome:"Comandante Revan", emoji:"👑", tipo:"boss", hp:25, maxHp:25, dano:2.5, exp:200, ouro:120, fase:1, maxFase:3,
+      drops:[{id:"espada_revan",nome:"Espada de Revan",emoji:"⚔️",chance:1},{id:"manto_ordem",nome:"Manto da Ordem",emoji:"🟥",chance:0.6},{id:"sinete_ordem",nome:"Sinete da Ordem",emoji:"💍",chance:0.3}] },
+  ],
+  cordilheira: [
+    { id:"grifo_jovem", nome:"Grifo Jovem", emoji:"🦅", tipo:"comum", hp:4, maxHp:4, dano:1, exp:18, ouro:8,
+      drops:[{id:"pena_grifo",nome:"Pena de Grifo",emoji:"🪶",chance:0.7},{id:"garra_grifo",nome:"Garra de Grifo",emoji:"🦅",chance:0.4}] },
+    { id:"serpente_raio", nome:"Serpente do Raio", emoji:"🐍", tipo:"comum", hp:3, maxHp:3, dano:1.5, exp:20, ouro:10,
+      drops:[{id:"escama_raio",nome:"Escama do Raio",emoji:"⚡",chance:0.6},{id:"veneno_raio",nome:"Veneno do Raio",emoji:"💛",chance:0.3}] },
+    { id:"yeti_montanha", nome:"Yeti da Montanha", emoji:"🏔️", tipo:"elite", hp:10, maxHp:10, dano:2, exp:55, ouro:28,
+      drops:[{id:"pelo_yeti",nome:"Pelo de Yeti",emoji:"🤍",chance:0.6},{id:"gelo_eterno",nome:"Gelo Eterno",emoji:"❄️",chance:0.3}] },
+    { id:"golem_trovao", nome:"Golem do Trovão", emoji:"⛈️", tipo:"elite", hp:9, maxHp:9, dano:1.5, exp:50, ouro:25,
+      drops:[{id:"nucleo_trovao",nome:"Núcleo do Trovão",emoji:"⚡",chance:0.4}] },
+    { id:"roc_anciao", nome:"Roc Ancião", emoji:"🦅", tipo:"boss", hp:28, maxHp:28, dano:3, exp:220, ouro:100, fase:1, maxFase:2,
+      drops:[{id:"pena_roc",nome:"Pena do Roc",emoji:"🪶",chance:1},{id:"olho_roc",nome:"Olho do Roc",emoji:"👁️",chance:0.5},{id:"garras_roc",nome:"Garras do Roc",emoji:"🦅",chance:0.4}] },
+  ],
+  deserto: [
+    { id:"escorpiao_cinza", nome:"Escorpião Cinzento", emoji:"🦂", tipo:"comum", hp:4, maxHp:4, dano:1, exp:18, ouro:9,
+      drops:[{id:"ferrão_escorpiao",nome:"Ferrão de Escorpião",emoji:"🦂",chance:0.6},{id:"veneno_escorpiao",nome:"Veneno de Escorpião",emoji:"💜",chance:0.4}] },
+    { id:"serpente_areia", nome:"Serpente da Areia", emoji:"🐍", tipo:"comum", hp:3, maxHp:3, dano:1.5, exp:22, ouro:11,
+      drops:[{id:"escama_areia",nome:"Escama da Areia",emoji:"🟡",chance:0.6},{id:"dente_serpente",nome:"Dente de Serpente",emoji:"🦷",chance:0.35}] },
+    { id:"djinn_chamas", nome:"Djinn das Chamas", emoji:"🔥", tipo:"elite", hp:8, maxHp:8, dano:2, exp:55, ouro:30,
+      drops:[{id:"essencia_fogo",nome:"Essência de Fogo",emoji:"🔥",chance:0.5},{id:"cristal_calor",nome:"Cristal do Calor",emoji:"🟠",chance:0.3}] },
+    { id:"titan_areia", nome:"Titã da Areia", emoji:"🏜️", tipo:"elite", hp:14, maxHp:14, dano:2, exp:70, ouro:35,
+      drops:[{id:"pedra_deserto",nome:"Pedra do Deserto",emoji:"🟤",chance:0.5},{id:"cristal_essencia",nome:"Cristal de Essência",emoji:"💎",chance:0.2}] },
+    { id:"serpente_anciã", nome:"Serpente Anciã", emoji:"🐍", tipo:"boss", hp:30, maxHp:30, dano:2.5, exp:250, ouro:130, fase:1, maxFase:3,
+      drops:[{id:"escama_anciã",nome:"Escama Anciã",emoji:"🟡",chance:1},{id:"veneno_ancestral",nome:"Veneno Ancestral",emoji:"☠️",chance:0.6},{id:"cristal_essencia",nome:"Cristal de Essência Pura",emoji:"💎",chance:0.4}] },
+  ],
+  ruinas: [
+    { id:"corrompido_menor", nome:"Corrompido Menor", emoji:"👤", tipo:"comum", hp:6, maxHp:6, dano:1.5, exp:35, ouro:15,
+      drops:[{id:"essencia_corrompida",nome:"Essência Corrompida",emoji:"⚫",chance:0.6},{id:"fragmento_fratura",nome:"Fragmento da Fratura",emoji:"🌑",chance:0.3}] },
+    { id:"aberracao_menor", nome:"Aberração Menor", emoji:"👾", tipo:"elite", hp:10, maxHp:10, dano:2, exp:65, ouro:35,
+      drops:[{id:"nucleo_aberracao",nome:"Núcleo de Aberração",emoji:"🟣",chance:0.4},{id:"fragmento_fratura",nome:"Fragmento da Fratura",emoji:"🌑",chance:0.5}] },
+    { id:"espectro_antigo", nome:"Espectro Antigo", emoji:"👻", tipo:"elite", hp:8, maxHp:8, dano:2.5, exp:70, ouro:30,
+      drops:[{id:"alma_espectro",nome:"Alma do Espectro",emoji:"✨",chance:0.5},{id:"essencia_corrompida",nome:"Essência Corrompida",emoji:"⚫",chance:0.4}] },
+    { id:"vael_fragmento", nome:"Fragmento de Vael", emoji:"🌀", tipo:"boss", hp:40, maxHp:40, dano:3.5, exp:500, ouro:250, fase:1, maxFase:4,
+      drops:[{id:"essencia_vael",nome:"Essência de Vael",emoji:"🌀",chance:1},{id:"fragmento_fratura",nome:"Fragmento da Fratura",emoji:"🌑",chance:1},{id:"reliquia_vael",nome:"Relíquia de Vael",emoji:"💠",chance:0.5}] },
+  ],
+  varnok: [],
+};
 
 // ══════════════════════════════════════════════════════════
-// DADOS BASE
+// ITENS / EQUIPAMENTOS
+// ══════════════════════════════════════════════════════════
+const ITENS_DB = {
+  // Drops
+  pele_lobo:{ id:"pele_lobo", nome:"Pele de Lobo", emoji:"🟫", tipo:"material", desc:"Pele resistente de lobo.", valor:8 },
+  garra_lobo:{ id:"garra_lobo", nome:"Garra de Lobo", emoji:"🦴", tipo:"material", desc:"Garra afiada.", valor:12 },
+  fang_negro:{ id:"fang_negro", nome:"Presa Negra", emoji:"🖤", tipo:"material", desc:"Presa de lobo negro rara.", valor:25 },
+  essencia_névoa:{ id:"essencia_névoa", nome:"Essência de Névoa", emoji:"🌫️", tipo:"material", desc:"Capturada de espíritos.", valor:20 },
+  veneno_aranha:{ id:"veneno_aranha", nome:"Veneno de Aranha", emoji:"☠️", tipo:"material", desc:"Altamente tóxico.", valor:18 },
+  seda_sombra:{ id:"seda_sombra", nome:"Seda das Sombras", emoji:"🕸️", tipo:"material", desc:"Tecido pela escuridão.", valor:22 },
+  chifre_corrompido:{ id:"chifre_corrompido", nome:"Chifre Corrompido", emoji:"🟣", tipo:"material", desc:"Repleto de Essência.", valor:30 },
+  carne_corrompida:{ id:"carne_corrompida", nome:"Carne Corrompida", emoji:"🩸", tipo:"material", desc:"Não comer.", valor:5 },
+  essencia_alfa:{ id:"essencia_alfa", nome:"Essência do Alfa", emoji:"⭐", tipo:"artefato", desc:"Poder do líder da alcateia. +1 FOR.", valor:80, efeito:{FOR:1} },
+  pelagem_alfa:{ id:"pelagem_alfa", nome:"Pelagem do Alfa", emoji:"🟤", tipo:"armadura", desc:"Armadura leve. +1 RES.", valor:60, efeito:{RES:1, defesa:0.5} },
+  coracao_alfa:{ id:"coracao_alfa", nome:"Coração do Alfa", emoji:"❤️", tipo:"artefato", desc:"Regenera ½❤️ por turno de combate.", valor:100, efeito:{regen:0.5} },
+  fragmento_ferro:{ id:"fragmento_ferro", nome:"Fragmento de Ferro", emoji:"🔩", tipo:"material", desc:"Metal resistente.", valor:10 },
+  emblema_ordem:{ id:"emblema_ordem", nome:"Emblema da Ordem", emoji:"🛡️", tipo:"material", desc:"Pode ser usado como passaporte.", valor:35 },
+  flecha_carmesim:{ id:"flecha_carmesim", nome:"Flecha Carmesim", emoji:"🏹", tipo:"material", desc:"Tingida de sangue.", valor:8 },
+  espada_ordem:{ id:"espada_ordem", nome:"Espada da Ordem", emoji:"⚔️", tipo:"arma", desc:"+1 dano em ataques diretos.", valor:90, efeito:{dano:1} },
+  armadura_ferro:{ id:"armadura_ferro", nome:"Armadura de Ferro", emoji:"🛡️", tipo:"armadura", desc:"+2 RES.", valor:80, efeito:{RES:2, defesa:1} },
+  machado_sangue:{ id:"machado_sangue", nome:"Machado de Sangue", emoji:"🪓", tipo:"arma", desc:"+1.5 dano, drena ½❤️ de si ao usar.", valor:100, efeito:{dano:1.5, selfDano:0.5} },
+  nucleo_pedra:{ id:"nucleo_pedra", nome:"Núcleo de Pedra", emoji:"🪨", tipo:"material", desc:"Energia cristalizada.", valor:40 },
+  runa_antiga:{ id:"runa_antiga", nome:"Runa Antiga", emoji:"🔮", tipo:"artefato", desc:"+1 CTR.", valor:70, efeito:{CTR:1} },
+  espada_revan:{ id:"espada_revan", nome:"Espada de Revan", emoji:"⚔️", tipo:"arma", desc:"+2 dano. Bônus +1 contra Ordem.", valor:150, efeito:{dano:2} },
+  manto_ordem:{ id:"manto_ordem", nome:"Manto da Ordem", emoji:"🟥", tipo:"armadura", desc:"+1 RES +1 AGI.", valor:120, efeito:{RES:1, AGI:1, defesa:0.5} },
+  sinete_ordem:{ id:"sinete_ordem", nome:"Sinete da Ordem", emoji:"💍", tipo:"artefato", desc:"Acesso a áreas restritas.", valor:60 },
+  pena_grifo:{ id:"pena_grifo", nome:"Pena de Grifo", emoji:"🪶", tipo:"material", desc:"Levíssima.", valor:15 },
+  garra_grifo:{ id:"garra_grifo", nome:"Garra de Grifo", emoji:"🦅", tipo:"material", desc:"Cortante.", valor:20 },
+  escama_raio:{ id:"escama_raio", nome:"Escama do Raio", emoji:"⚡", tipo:"material", desc:"Conduz eletricidade.", valor:25 },
+  veneno_raio:{ id:"veneno_raio", nome:"Veneno do Raio", emoji:"💛", tipo:"material", desc:"Causa paralisia.", valor:30 },
+  pelo_yeti:{ id:"pelo_yeti", nome:"Pelo de Yeti", emoji:"🤍", tipo:"material", desc:"Extremamente quente.", valor:20 },
+  gelo_eterno:{ id:"gelo_eterno", nome:"Gelo Eterno", emoji:"❄️", tipo:"material", desc:"Nunca derrete.", valor:45 },
+  nucleo_trovao:{ id:"nucleo_trovao", nome:"Núcleo do Trovão", emoji:"⚡", tipo:"artefato", desc:"+1 dano elemental.", valor:85, efeito:{danoElemental:1} },
+  pena_roc:{ id:"pena_roc", nome:"Pena do Roc", emoji:"🪶", tipo:"arma", desc:"Leve como o vento. +2 AGI.", valor:130, efeito:{AGI:2} },
+  olho_roc:{ id:"olho_roc", nome:"Olho do Roc", emoji:"👁️", tipo:"artefato", desc:"Visão perfeita. +2 CTR.", valor:110, efeito:{CTR:2} },
+  garras_roc:{ id:"garras_roc", nome:"Garras do Roc", emoji:"🦅", tipo:"arma", desc:"+1.5 dano, +1 AGI.", valor:120, efeito:{dano:1.5, AGI:1} },
+  ferrão_escorpiao:{ id:"ferrão_escorpiao", nome:"Ferrão de Escorpião", emoji:"🦂", tipo:"material", desc:"Venenoso.", valor:18 },
+  veneno_escorpiao:{ id:"veneno_escorpiao", nome:"Veneno de Escorpião", emoji:"💜", tipo:"material", desc:"Veneno potente.", valor:28 },
+  escama_areia:{ id:"escama_areia", nome:"Escama da Areia", emoji:"🟡", tipo:"material", desc:"Resistente ao calor.", valor:15 },
+  dente_serpente:{ id:"dente_serpente", nome:"Dente de Serpente", emoji:"🦷", tipo:"material", desc:"Afiado.", valor:12 },
+  essencia_fogo:{ id:"essencia_fogo", nome:"Essência de Fogo", emoji:"🔥", tipo:"material", desc:"Quente ao toque.", valor:35 },
+  cristal_calor:{ id:"cristal_calor", nome:"Cristal do Calor", emoji:"🟠", tipo:"artefato", desc:"+1 dano de fogo.", valor:75, efeito:{danoFogo:1} },
+  pedra_deserto:{ id:"pedra_deserto", nome:"Pedra do Deserto", emoji:"🟤", tipo:"material", desc:"Polida pelo vento.", valor:10 },
+  cristal_essencia:{ id:"cristal_essencia", nome:"Cristal de Essência Pura", emoji:"💎", tipo:"artefato", desc:"+2 EN máximo.", valor:150, efeito:{ENE:2, maxEn:2} },
+  escama_anciã:{ id:"escama_anciã", nome:"Escama Anciã", emoji:"🟡", tipo:"armadura", desc:"+2 RES +1 FOR.", valor:160, efeito:{RES:2, FOR:1, defesa:1} },
+  veneno_ancestral:{ id:"veneno_ancestral", nome:"Veneno Ancestral", emoji:"☠️", tipo:"material", desc:"O mais potente veneno.", valor:80 },
+  essencia_corrompida:{ id:"essencia_corrompida", nome:"Essência Corrompida", emoji:"⚫", tipo:"material", desc:"Perigosa. Não usar.", valor:25 },
+  fragmento_fratura:{ id:"fragmento_fratura", nome:"Fragmento da Fratura", emoji:"🌑", tipo:"artefato", desc:"+1 a todos os atributos, mas +10% dano recebido.", valor:200, efeito:{FOR:1,AGI:1,RES:1,ENE:1,CTR:1} },
+  nucleo_aberracao:{ id:"nucleo_aberracao", nome:"Núcleo de Aberração", emoji:"🟣", tipo:"material", desc:"Essência instável.", valor:50 },
+  alma_espectro:{ id:"alma_espectro", nome:"Alma do Espectro", emoji:"✨", tipo:"artefato", desc:"+1 CTR +1 ENE.", valor:120, efeito:{CTR:1,ENE:1} },
+  essencia_vael:{ id:"essencia_vael", nome:"Essência de Vael", emoji:"🌀", tipo:"artefato", desc:"Poder além da compreensão. +2 todos.", valor:500, efeito:{FOR:2,AGI:2,RES:2,ENE:2,CTR:2} },
+  reliquia_vael:{ id:"reliquia_vael", nome:"Relíquia de Vael", emoji:"💠", tipo:"artefato", desc:"A relíquia mais poderosa. Efeito único.", valor:999 },
+};
+
+// ══════════════════════════════════════════════════════════
+// HEROES E REGIÕES
 // ══════════════════════════════════════════════════════════
 const HEROES_TEMPLATE = {
   balo:{ id:"balo", nome:"Balo Balesco", emoji:"🗡️", classe:"Lutador", arma:"Adaga", poder:"Sombra",
-    cor:"#c9a96e", corDim:"#7a5e30", hp:5, maxHp:5, en:5, maxEn:5, maestria:1,
+    cor:"#c9a96e", corDim:"#7a5e30", hp:5, maxHp:5, en:5, maxEn:5,
+    exp:0, expProxLevel:100, nivel:1, pontosStatus:0,
     rank:"bronze", rankPts:0, ouro:50,
-    attrs:{"💪 FOR":3,"⚡ AGI":7,"🛡️ RES":3,"🔋 ENE":5,"🎯 CTR":2},
-    espec:"Parry", fraq:"Pouca força física", status:null, statusEfeitos:[], regiao:"varnok", missaoAtiva:null },
+    attrs:{FOR:3, AGI:7, RES:3, ENE:5, CTR:2},
+    espec:"Parry", fraq:"Pouca força", parryChance:0.20,
+    status:null, regiao:"varnok", missaoAtiva:null,
+    inventario:[], equipamentos:{ arma:null, armadura:null, artefatos:[null,null,null] } },
   fuboka:{ id:"fuboka", nome:"Fuboka", emoji:"🌑", classe:"Especialista", arma:"Cavaleiro das Almas", poder:"Invocação",
-    cor:"#8888e8", corDim:"#404080", hp:5, maxHp:5, en:6, maxEn:6, maestria:1,
+    cor:"#8888e8", corDim:"#404080", hp:5, maxHp:5, en:6, maxEn:6,
+    exp:0, expProxLevel:100, nivel:1, pontosStatus:0,
     rank:"bronze", rankPts:0, ouro:50,
-    attrs:{"💪 FOR":2,"⚡ AGI":2,"🛡️ RES":3,"🔋 ENE":6,"🎯 CTR":7},
-    espec:"Domar", fraq:"Toma mais dano direto", status:null, statusEfeitos:[], regiao:"varnok", missaoAtiva:null },
+    attrs:{FOR:2, AGI:2, RES:3, ENE:6, CTR:7},
+    espec:"Domar", fraq:"Toma mais dano direto", parryChance:0.05,
+    status:null, regiao:"varnok", missaoAtiva:null,
+    inventario:[], equipamentos:{ arma:null, armadura:null, artefatos:[null,null,null] } },
   patosauro:{ id:"patosauro", nome:"Patosauro", emoji:"🦖", classe:"Especialista", arma:"T-Rex", poder:"Invocação",
-    cor:"#5ab870", corDim:"#2a5a38", hp:5, maxHp:5, en:7, maxEn:7, maestria:1,
+    cor:"#5ab870", corDim:"#2a5a38", hp:5, maxHp:5, en:7, maxEn:7,
+    exp:0, expProxLevel:100, nivel:1, pontosStatus:0,
     rank:"bronze", rankPts:0, ouro:50,
-    attrs:{"💪 FOR":2,"⚡ AGI":3,"🛡️ RES":2,"🔋 ENE":7,"🎯 CTR":6},
-    espec:"Controle de Combate", fraq:"Força física", status:null, statusEfeitos:[], regiao:"varnok", missaoAtiva:null },
+    attrs:{FOR:2, AGI:3, RES:2, ENE:7, CTR:6},
+    espec:"Controle", fraq:"Força física", parryChance:0.05,
+    status:null, regiao:"varnok", missaoAtiva:null,
+    inventario:[], equipamentos:{ arma:null, armadura:null, artefatos:[null,null,null] } },
 };
 
 const REGIOES = {
-  varnok:{ id:"varnok", nome:"Varnok", emoji:"🏙️", perigo:"Seguro", cor:"#c9a96e", desc:"A cidade dos mercenários.", locais:["Guilda","Mercado","Taverna","Templo"] },
-  lunaris:{ id:"lunaris", nome:"Floresta de Lunaris", emoji:"🌲", perigo:"Médio", cor:"#5ab870", desc:"Névoa permanente. Espíritos. Lobos.", locais:["Entrada","Árvore Anciã","Templo Esquecido"] },
-  vale:{ id:"vale", nome:"Vale Carmesim", emoji:"⚔️", perigo:"Alto", cor:"#d94f4f", desc:"Terra vermelha. Ordem de Ferro.", locais:["Forte da Ordem","Ruínas do Vale"] },
-  cordilheira:{ id:"cordilheira", nome:"Cordilheira Tempestade", emoji:"⛰️", perigo:"Alto", cor:"#4a80d4", desc:"Ventos. Raios. Treino extremo.", locais:["Pico do Trovão","Caverna dos Grifos"] },
-  deserto:{ id:"deserto", nome:"Deserto Cinzento", emoji:"🏜️", perigo:"Alto", cor:"#d97c30", desc:"Calor extremo. Criaturas enormes.", locais:["Oásis","Câmara do Ritual"] },
-  ruinas:{ id:"ruinas", nome:"Ruínas da Fratura", emoji:"💀", perigo:"Extremo", cor:"#a78bfa", desc:"O epicentro. O fim e o começo.", locais:["Epicentro","A Fenda"], rankMinimo:"ouro" },
+  varnok:{ id:"varnok", nome:"Varnok", emoji:"🏙️", perigo:"Seguro", cor:"#c9a96e", desc:"A cidade dos mercenários. Centro de tudo." },
+  lunaris:{ id:"lunaris", nome:"Floresta de Lunaris", emoji:"🌲", perigo:"Médio", cor:"#5ab870", desc:"Névoa permanente. Lobos. Espíritos." },
+  vale:{ id:"vale", nome:"Vale Carmesim", emoji:"⚔️", perigo:"Alto", cor:"#d94f4f", desc:"Terra vermelha. Ordem de Ferro." },
+  cordilheira:{ id:"cordilheira", nome:"Cordilheira Tempestade", emoji:"⛰️", perigo:"Alto", cor:"#4a80d4", desc:"Ventos. Raios. Grifos." },
+  deserto:{ id:"deserto", nome:"Deserto Cinzento", emoji:"🏜️", perigo:"Alto", cor:"#d97c30", desc:"Calor extremo. Criaturas enormes." },
+  ruinas:{ id:"ruinas", nome:"Ruínas da Fratura", emoji:"💀", perigo:"Extremo", cor:"#a78bfa", desc:"O epicentro. Aberrações.", rankMinimo:"ouro" },
 };
-
-const MISSOES_SECUNDARIAS = [
-  { id:"m1", titulo:"Lobos na Floresta", regiao:"lunaris", rank:"bronze", emoji:"🐺", desc:"Elimine a ameaça de lobos.", recompensa:"50 ouros" },
-  { id:"m2", titulo:"Entrega Urgente", regiao:"varnok", rank:"bronze", emoji:"📦", desc:"Escorte um comerciante.", recompensa:"30 ouros" },
-  { id:"m3", titulo:"Cristal de Essência", regiao:"deserto", rank:"prata", emoji:"💎", desc:"Recupere um cristal raro.", recompensa:"100 ouros" },
-];
 
 const RANKS = ["bronze","prata","ouro","platina","lendario"];
 const RANK_EMOJI = { bronze:"🥉", prata:"🥈", ouro:"🥇", platina:"💎", lendario:"👑" };
 const RANK_PTS = { bronze:5, prata:10, ouro:15, platina:20, lendario:999 };
+const ATTR_NOMES = { FOR:"💪 FOR", AGI:"⚡ AGI", RES:"🛡️ RES", ENE:"🔋 ENE", CTR:"🎯 CTR" };
 
 // ── STORAGE ───────────────────────────────────────────────
-async function saveUser(username, data) {
-  try { await window.storage.set(`elaris:user:${username.toLowerCase()}`, JSON.stringify(data)); } catch(e){}
-}
-async function loadUser(username) {
-  try { const r = await window.storage.get(`elaris:user:${username.toLowerCase()}`); return r ? JSON.parse(r.value) : null; } catch(e){ return null; }
-}
-async function saveGroup(gid, data) {
-  try { await window.storage.set(`elaris:group:${gid}`, JSON.stringify(data), true); } catch(e){}
-}
-async function loadGroup(gid) {
-  try { const r = await window.storage.get(`elaris:group:${gid}`, true); return r ? JSON.parse(r.value) : null; } catch(e){ return null; }
-}
+async function saveUser(u, d) { try { await window.storage.set(`e4:${u}`, JSON.stringify(d)); } catch(e){} }
+async function loadUser(u) { try { const r=await window.storage.get(`e4:${u}`); return r?JSON.parse(r.value):null; } catch(e){ return null; } }
+async function saveGroup(id, d) { try { await window.storage.set(`e4g:${id}`, JSON.stringify(d), true); } catch(e){} }
+async function loadGroup(id) { try { const r=await window.storage.get(`e4g:${id}`, true); return r?JSON.parse(r.value):null; } catch(e){ return null; } }
 
 function makeUser(username, password, heroId) {
   return { username, password, heroId, hero: JSON.parse(JSON.stringify(HEROES_TEMPLATE[heroId])),
     grupo:null, narracao:"", log:[], lastSeen:Date.now() };
 }
-function makeGroup(id, members) {
-  return { id, members, historiaCapitulo:0, historiaEscolhas:{}, historiaCompleta:false,
-    aguardandoEscolha:false, escolhaAtual:null, log:[], updatedAt:Date.now() };
-}
 
-// ── PROMPT ────────────────────────────────────────────────
-function buildPrompt(user, acao, dado, dadoLabel) {
-  const h = user.hero;
-  const r = REGIOES[h.regiao]||REGIOES.varnok;
-  return `Você é o Mestre do RPG ELARIS. Narre em português — frases curtas, impacto dramático, estilo sombrio.
-MUNDO: Elaris pós-Fratura. Céu rachado. Monstros. Essência. Poderes. Organização secreta (Filhos da Fratura) tenta invocar Vael.
-REGIÃO: ${r.emoji} ${r.nome} — ${r.desc}
-PERSONAGEM: ${h.nome} (${h.classe}) HP:${h.hp}/${h.maxHp} EN:${h.en}/${h.maxEn} Rank:${RANK_EMOJI[h.rank]} Ouro:${h.ouro}
-${h.regiao==="varnok"?"VARNOK: Maren(Guilda), Durk(Ferreiro), Taverna do Osso":"EXPLORAÇÃO/COMBATE LIVRE"}
-AÇÃO: "${acao}" | d20: ${dado} (${dadoLabel})
-REGRAS: 1-5=falha,6-10=ruim,11-15=normal,16-19=bom,20=crítico. Bônus estratégia +2 a +5. Dano: ½❤ fraco,1❤ médio,2❤ forte.
-Responda SOMENTE com JSON: {"narracao":"2-3 parágrafos","danoHeroi":0,"curaHeroi":0,"custoEnergia":0,"ganhouOuro":0,"rankPts":0,"maestriaPts":0}`;
+// ── HELPERS ───────────────────────────────────────────────
+function getAttrTotal(hero, attr) {
+  let base = hero.attrs[attr] || 0;
+  const eq = hero.equipamentos;
+  if(eq.arma && ITENS_DB[eq.arma]?.efeito?.[attr]) base += ITENS_DB[eq.arma].efeito[attr];
+  if(eq.armadura && ITENS_DB[eq.armadura]?.efeito?.[attr]) base += ITENS_DB[eq.armadura].efeito[attr];
+  (eq.artefatos||[]).forEach(a=>{ if(a && ITENS_DB[a]?.efeito?.[attr]) base += ITENS_DB[a].efeito[attr]; });
+  return base;
+}
+function getDefesaBonus(hero) {
+  let d=0;
+  const eq=hero.equipamentos;
+  if(eq.armadura && ITENS_DB[eq.armadura]?.efeito?.defesa) d += ITENS_DB[eq.armadura].efeito.defesa;
+  return d;
+}
+function getDanoBonus(hero) {
+  let d=0;
+  const eq=hero.equipamentos;
+  if(eq.arma && ITENS_DB[eq.arma]?.efeito?.dano) d += ITENS_DB[eq.arma].efeito.dano;
+  return d;
+}
+function calcExpProxLevel(nivel) { return Math.floor(100 * Math.pow(1.4, nivel-1)); }
+function rollParry(hero) { return Math.random() < (hero.parryChance||0.05); }
+function rollDrop(drops) {
+  const obtidos = [];
+  drops.forEach(d=>{ if(Math.random()<d.chance) obtidos.push(d.id); });
+  return obtidos;
+}
+function sortearInimigo(regiao, isBoss=false) {
+  const pool = (INIMIGOS_POR_AREA[regiao]||[]).filter(e=>isBoss?e.tipo==="boss":e.tipo!=="boss");
+  if(pool.length===0) return null;
+  return JSON.parse(JSON.stringify(pool[Math.floor(Math.random()*pool.length)]));
 }
 
 // ── UI ATOMS ──────────────────────────────────────────────
 function Pip({ filled, half, color, size=9 }) {
   return <div style={{width:size,height:size,borderRadius:"50%",flexShrink:0,
     background:filled?color:half?`linear-gradient(90deg,${color} 50%,#111 50%)`:"#111",
-    border:`1px solid ${filled||half?color+"99":"#222"}`,boxShadow:filled?`0 0 5px ${color}66`:"none",transition:"all 0.4s"}}/>;
+    border:`1px solid ${filled||half?color+"99":"#222"}`,boxShadow:filled?`0 0 5px ${color}66`:"none",transition:"all 0.3s"}}/>;
 }
 function PipRow({ val, max, color, size=9 }) {
   return <div style={{display:"flex",gap:3,flexWrap:"wrap"}}>
-    {Array.from({length:max},(_,i)=><Pip key={i} filled={i<Math.floor(val)} half={!(i<Math.floor(val))&&i<val} color={color} size={size}/>)}
+    {Array.from({length:Math.min(max,10)},(_,i)=><Pip key={i} filled={i<Math.floor(val)} half={!(i<Math.floor(val))&&i<val} color={color} size={size}/>)}
   </div>;
 }
 function RankBar({ rank, pts }) {
@@ -281,6 +240,17 @@ function RankBar({ rank, pts }) {
     </div>
     <div style={{height:2,background:"#111",borderRadius:1}}>
       <div style={{width:`${Math.min(100,(pts/needed)*100)}%`,height:"100%",background:T.gold,transition:"width 0.5s",borderRadius:1}}/>
+    </div>
+  </div>;
+}
+function ExpBar({ exp, proxLevel }) {
+  return <div>
+    <div style={{display:"flex",justifyContent:"space-between",marginBottom:2}}>
+      <span style={{fontSize:9,color:T.purple}}>✨ EXP</span>
+      <span style={{fontSize:9,color:T.muted}}>{exp}/{proxLevel}</span>
+    </div>
+    <div style={{height:2,background:"#111",borderRadius:1}}>
+      <div style={{width:`${Math.min(100,(exp/proxLevel)*100)}%`,height:"100%",background:T.purple,transition:"width 0.5s",borderRadius:1}}/>
     </div>
   </div>;
 }
@@ -298,211 +268,297 @@ function DiceOverlay({ value, onClose }) {
   </div>;
 }
 
-// ── HISTÓRIA MODAL ────────────────────────────────────────
-function HistoriaModal({ grupo, user, membrosData, onEscolha, onFechar }) {
-  const cap = HISTORIA[grupo.historiaCapitulo];
-  if(!cap) return null;
+// ── SISTEMA DE BATALHA ────────────────────────────────────
+function BatalhaScreen({ user, inimigo, onFim, onUpdate }) {
+  const [h, setH] = useState({...user.hero});
+  const [mob, setMob] = useState({...inimigo});
+  const [log, setLog] = useState([]);
+  const [fase, setFase] = useState("player"); // player | inimigo | fim
+  const [dado, setDado] = useState(null);
+  const [diceVal, setDiceVal] = useState(null);
+  const [showDice, setShowDice] = useState(false);
+  const [acao, setAcao] = useState("");
+  const [resultado, setResultado] = useState(null); // { vitoria, drops, exp, ouro }
+  const bottomRef = useRef(null);
 
-  const membros = grupo.members || [];
-  const todosNaRegiao = membros.every(m => {
-    const md = membrosData[m];
-    return md && md.hero.regiao === cap.regiaoNecessaria;
-  });
-  const rankOk = RANKS.indexOf(user.hero.rank) >= RANKS.indexOf(cap.rankNecessario);
-  const podeAvancar = todosNaRegiao && rankOk && !grupo.aguardandoEscolha;
-  const jaEscolheu = grupo.historiaEscolhas?.[`cap${cap.id}_${user.username}`];
+  useEffect(()=>{ bottomRef.current?.scrollIntoView({behavior:"smooth"}); },[log]);
 
-  const aguardandoMembros = membros.filter(m => {
-    const md = membrosData[m];
-    return !md || md.hero.regiao !== cap.regiaoNecessaria;
-  });
+  const dadoColor=!dado?"#666":dado<=5?T.red:dado<=10?T.orange:dado<=15?T.gold:dado<20?T.green:T.purple;
+  const dadoLabel=!dado?"":dado<=5?"Falha crítica!":dado<=10?"Ruim":dado<=15?"Normal":dado<20?"Muito bom!":"CRÍTICO! 🔥";
 
-  return <div style={{position:"fixed",inset:0,zIndex:400,background:"rgba(4,4,8,0.97)",overflowY:"auto",padding:16}}>
-    <div style={{maxWidth:500,margin:"0 auto"}}>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
-        <div style={{fontSize:13,color:cap.cor,fontWeight:700,letterSpacing:2}}>📖 HISTÓRIA PRINCIPAL</div>
-        <button onClick={onFechar} style={{background:"transparent",border:`1px solid ${T.border}`,color:T.muted,borderRadius:8,padding:"4px 10px",cursor:"pointer"}}>✕</button>
-      </div>
+  function rollDice(){ const v=Math.ceil(Math.random()*20); setDiceVal(v); setShowDice(true); }
+  function closeDice(){ if(diceVal) setDado(diceVal); setShowDice(false); }
 
-      {/* Progresso */}
-      <div style={{display:"flex",gap:4,marginBottom:20,flexWrap:"wrap"}}>
-        {HISTORIA.map((h,i)=>(
-          <div key={i} style={{flex:1,minWidth:30,height:4,borderRadius:2,
-            background:i<grupo.historiaCapitulo?cap.cor:i===grupo.historiaCapitulo?`${cap.cor}88`:"#1a1a2a",
-            transition:"all 0.5s"}}/>
-        ))}
-      </div>
+  function addLog(txt, cor=T.text) { setLog(l=>[...l, {txt,cor}]); }
 
-      {/* Capítulo atual */}
-      <div style={{background:`${cap.cor}08`,border:`1px solid ${cap.cor}33`,borderRadius:14,padding:20,marginBottom:16}}>
-        <div style={{fontSize:11,color:cap.cor,letterSpacing:3,marginBottom:8}}>{cap.emoji} CAPÍTULO {cap.id}</div>
-        <div style={{fontSize:18,color:cap.cor,fontWeight:700,marginBottom:16}}>{cap.titulo}</div>
+  async function confirmarAtaque() {
+    if(!dado||!acao.trim()) return;
+    let newH={...h}; let newMob={...mob};
+    // Calcular dano do jogador
+    let danoBase = dado>=20?2:dado>=16?1.5:dado>=11?1:dado>=6?0.5:0;
+    danoBase += getDanoBonus(h);
+    if(dado<=5){ addLog(`❌ ${h.nome} falhou! Dano em si mesmo!`, T.red); newH={...newH,hp:Math.max(0,newH.hp-0.5)}; }
+    else if(danoBase>0){
+      newMob={...newMob,hp:Math.max(0,newMob.hp-danoBase)};
+      addLog(`⚔️ ${h.nome} causou ${danoBase}❤️ em ${mob.nome}! (${dadoLabel})`, T.green);
+    }
+    // Fase do inimigo
+    if(newMob.hp>0) {
+      await new Promise(r=>setTimeout(r,600));
+      // Parry check
+      const parried = rollParry(h);
+      const danoInimigo = Math.max(0, mob.dano - getDefesaBonus(h));
+      if(parried){
+        addLog(`🛡️ ${h.nome} aparou o ataque do ${mob.nome}! (${Math.round(h.parryChance*100)}% chance)`, T.gold);
+      } else {
+        newH={...newH,hp:Math.max(0,newH.hp-danoInimigo)};
+        addLog(`💢 ${mob.nome} atacou! ${h.nome} recebeu ${danoInimigo}❤️`, T.red);
+      }
+    }
+    setH(newH); setMob(newMob); setDado(null); setAcao("");
+    // Verificar fim
+    if(newMob.hp<=0){
+      const drops = rollDrop(mob.drops||[]);
+      const expGanha = mob.exp;
+      const ouroGanho = mob.ouro + Math.floor(Math.random()*5);
+      addLog(`🏆 ${mob.nome} foi derrotado!`, T.gold);
+      if(drops.length>0) addLog(`📦 Drops: ${drops.map(d=>ITENS_DB[d]?.emoji+ITENS_DB[d]?.nome||d).join(", ")}`, T.purple);
+      addLog(`✨ +${expGanha} EXP | 💰 +${ouroGanho} ouros`, T.green);
+      setResultado({vitoria:true, drops, exp:expGanha, ouro:ouroGanho});
+      // Aplicar ao herói
+      let finalH={...newH};
+      finalH.exp=(finalH.exp||0)+expGanha;
+      finalH.ouro=(finalH.ouro||0)+ouroGanho;
+      // Level up
+      while(finalH.exp>=(finalH.expProxLevel||100)){
+        finalH.exp-=(finalH.expProxLevel||100);
+        finalH.nivel=(finalH.nivel||1)+1;
+        finalH.expProxLevel=calcExpProxLevel(finalH.nivel);
+        finalH.pontosStatus=(finalH.pontosStatus||0)+3;
+        finalH.maxHp+=0.5; finalH.hp=Math.min(finalH.hp+0.5,finalH.maxHp);
+        addLog(`🎉 NÍVEL ${finalH.nivel}! +3 pontos de status!`, T.gold);
+      }
+      // Drops no inventário
+      finalH.inventario=[...(finalH.inventario||[]),...drops];
+      const newUser={...user,hero:finalH};
+      await saveUser(user.username,newUser);
+      onUpdate(newUser);
+      setFase("fim"); return;
+    }
+    if(newH.hp<=0){
+      addLog(`💀 ${h.nome} foi derrotado...`, T.red);
+      setResultado({vitoria:false, drops:[], exp:0, ouro:0});
+      let finalH={...newH,hp:1}; // Ressurge com 1 HP
+      const newUser={...user,hero:finalH};
+      await saveUser(user.username,newUser);
+      onUpdate(newUser);
+      setFase("fim"); return;
+    }
+  }
 
-        {/* Cena */}
-        <div style={{borderLeft:`2px solid ${cap.cor}44`,paddingLeft:14,marginBottom:20}}>
-          {cap.cena.split("\n\n").map((p,i)=>{
-            const html=p.replace(/\*\*(.+?)\*\*/g,`<strong style="color:${cap.cor}">$1</strong>`);
-            return <p key={i} style={{color:T.text,lineHeight:1.9,fontSize:13,margin:"0 0 10px"}} dangerouslySetInnerHTML={{__html:html}}/>;
-          })}
+  const pctMob = (mob.hp/mob.maxHp)*100;
+  const pctH = (h.hp/h.maxHp)*100;
+  const mobCor = mob.tipo==="boss"?T.purple:mob.tipo==="elite"?T.orange:T.red;
+
+  return <div style={{minHeight:"100vh",background:T.bg,color:T.text,fontFamily:"Georgia,serif",display:"flex",flexDirection:"column"}}>
+    {showDice&&diceVal&&<DiceOverlay value={diceVal} onClose={closeDice}/>}
+    {/* Header batalha */}
+    <div style={{background:"#0a0006",borderBottom:`1px solid ${T.red}44`,padding:"10px 14px"}}>
+      <div style={{fontSize:11,color:T.red,letterSpacing:3,marginBottom:8}}>⚔️ BATALHA</div>
+      {/* Inimigo */}
+      <div style={{marginBottom:8}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+          <span style={{fontSize:14,color:mobCor,fontWeight:700}}>{mob.emoji} {mob.nome}</span>
+          <span style={{fontSize:9,padding:"2px 6px",borderRadius:4,background:`${mobCor}22`,color:mobCor}}>{mob.tipo.toUpperCase()}</span>
         </div>
-
-        {/* Requisito de região */}
-        <div style={{background:"#0a0a14",border:`1px solid ${T.border}`,borderRadius:10,padding:"10px 14px",marginBottom:14}}>
-          <div style={{fontSize:10,color:T.muted,marginBottom:8}}>REQUISITOS PARA AVANÇAR</div>
-          <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}>
-            <span style={{fontSize:12}}>{REGIOES[cap.regiaoNecessaria]?.emoji}</span>
-            <span style={{fontSize:11,color:T.text}}>Todos em {REGIOES[cap.regiaoNecessaria]?.nome}</span>
-            {todosNaRegiao
-              ?<span style={{fontSize:10,color:T.green,marginLeft:"auto"}}>✅</span>
-              :<span style={{fontSize:10,color:T.orange,marginLeft:"auto"}}>⏳</span>}
-          </div>
-          <div style={{display:"flex",alignItems:"center",gap:8}}>
-            <span style={{fontSize:12}}>{RANK_EMOJI[cap.rankNecessario]}</span>
-            <span style={{fontSize:11,color:T.text}}>Rank {cap.rankNecessario}+</span>
-            {rankOk
-              ?<span style={{fontSize:10,color:T.green,marginLeft:"auto"}}>✅</span>
-              :<span style={{fontSize:10,color:T.orange,marginLeft:"auto"}}>⏳</span>}
-          </div>
+        <div style={{height:6,background:"#1a0a0a",borderRadius:3}}>
+          <div style={{width:`${pctMob}%`,height:"100%",background:mobCor,borderRadius:3,transition:"width 0.5s",boxShadow:`0 0 8px ${mobCor}66`}}/>
         </div>
-
-        {/* Aguardando membros */}
-        {!todosNaRegiao && aguardandoMembros.length>0 && (
-          <div style={{background:"#0a0a0e",border:`1px solid ${T.orange}33`,borderRadius:10,padding:"10px 14px",marginBottom:14}}>
-            <div style={{fontSize:10,color:T.orange,marginBottom:6}}>⏳ AGUARDANDO</div>
-            {aguardandoMembros.map(m=>{
-              const md=membrosData[m];
-              const regiaoAtual=md?REGIOES[md.hero.regiao]:null;
-              return <div key={m} style={{fontSize:11,color:T.muted,marginBottom:3}}>
-                {md?`${HEROES_TEMPLATE[md.heroId]?.emoji||"⚔️"} ${m} está em ${regiaoAtual?.emoji} ${regiaoAtual?.nome||"?"}`:`${m} — offline`}
-              </div>;
-            })}
-            <div style={{fontSize:10,color:T.muted,marginTop:8,fontStyle:"italic"}}>
-              Todos precisam ir para {REGIOES[cap.regiaoNecessaria]?.emoji} {REGIOES[cap.regiaoNecessaria]?.nome}
-            </div>
-          </div>
-        )}
-
-        {/* Escolhas */}
-        {podeAvancar && !jaEscolheu && (
-          <div>
-            <div style={{fontSize:10,color:T.muted,letterSpacing:2,marginBottom:10}}>O QUE FAZER?</div>
-            {cap.escolhas.map(e=>(
-              <button key={e.id} onClick={()=>onEscolha(cap.id, e)}
-                style={{width:"100%",marginBottom:8,padding:"12px 14px",background:`${cap.cor}10`,
-                  border:`1px solid ${cap.cor}44`,borderRadius:10,color:cap.cor,fontSize:12,
-                  cursor:"pointer",fontFamily:"Georgia,serif",textAlign:"left",lineHeight:1.5}}>
-                ▶ {e.texto}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {/* Já escolheu, aguardando outros */}
-        {jaEscolheu && grupo.aguardandoEscolha && (
-          <div style={{background:"#0a0a14",border:`1px solid ${T.border}`,borderRadius:10,padding:"10px 14px"}}>
-            <div style={{fontSize:11,color:T.green}}>✅ Você escolheu: {jaEscolheu}</div>
-            <div style={{fontSize:10,color:T.muted,marginTop:4}}>Aguardando os outros membros escolherem...</div>
-          </div>
-        )}
-
-        {/* Resultado da escolha */}
-        {grupo.historiaEscolhas?.[`cap${cap.id}_resultado`] && !grupo.aguardandoEscolha && grupo.historiaCapitulo===cap.id+1 && (
-          <div style={{background:`${cap.cor}10`,border:`1px solid ${cap.cor}44`,borderRadius:10,padding:"10px 14px"}}>
-            <div style={{fontSize:10,color:cap.cor,marginBottom:4}}>✨ RESULTADO</div>
-            <div style={{fontSize:12,color:T.text}}>{grupo.historiaEscolhas[`cap${cap.id}_resultado`]}</div>
-          </div>
-        )}
+        <div style={{fontSize:9,color:T.muted,marginTop:2}}>{mob.hp}/{mob.maxHp} HP · Dano: {mob.dano}❤️</div>
       </div>
-
-      {/* Histórico de capítulos */}
-      {grupo.historiaCapitulo>0&&<div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:12,padding:14}}>
-        <div style={{fontSize:10,color:T.muted,letterSpacing:2,marginBottom:10}}>CAPÍTULOS CONCLUÍDOS</div>
-        {HISTORIA.slice(0,grupo.historiaCapitulo).map(h=>(
-          <div key={h.id} style={{display:"flex",alignItems:"center",gap:8,padding:"5px 0",borderBottom:`1px solid ${T.border}`}}>
-            <span style={{fontSize:14}}>{h.emoji}</span>
-            <div style={{flex:1}}>
-              <div style={{fontSize:11,color:T.muted}}>{h.titulo}</div>
-              {grupo.historiaEscolhas?.[`cap${h.id}_resultado`]&&
-                <div style={{fontSize:10,color:h.cor,marginTop:2}}>{grupo.historiaEscolhas[`cap${h.id}_resultado`]}</div>}
-            </div>
-            <span style={{color:T.green,fontSize:12}}>✅</span>
-          </div>
-        ))}
-      </div>}
+      {/* Herói */}
+      <div>
+        <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
+          <span style={{fontSize:12,color:T.gold}}>{h.emoji} {h.nome}</span>
+          <span style={{fontSize:9,color:T.muted}}>Parry: {Math.round((h.parryChance||0.05)*100)}%</span>
+        </div>
+        <div style={{height:5,background:"#1a0a0a",borderRadius:3}}>
+          <div style={{width:`${pctH}%`,height:"100%",background:T.red,borderRadius:3,transition:"width 0.5s"}}/>
+        </div>
+        <div style={{display:"flex",justifyContent:"space-between",fontSize:9,color:T.muted,marginTop:2}}>
+          <span>{h.hp}/{h.maxHp} HP</span>
+          <span>{h.en}/{h.maxEn} EN</span>
+        </div>
+      </div>
     </div>
+
+    {/* Log */}
+    <div style={{flex:1,padding:"10px 14px",overflowY:"auto",maxHeight:"35vh"}}>
+      {log.map((l,i)=><div key={i} style={{fontSize:12,color:l.cor,marginBottom:4,lineHeight:1.5}}>{l.txt}</div>)}
+      <div ref={bottomRef}/>
+    </div>
+
+    {/* Ação */}
+    {fase!=="fim"&&<div style={{borderTop:`1px solid ${T.border}`,padding:"10px 14px"}}>
+      <textarea value={acao} onChange={e=>setAcao(e.target.value)}
+        placeholder="Descreva seu ataque ou estratégia..."
+        style={{width:"100%",minHeight:60,background:T.surface,border:`1px solid ${T.border}`,borderRadius:8,color:T.text,fontFamily:"Georgia,serif",fontSize:12,padding:9,resize:"none",outline:"none",boxSizing:"border-box",marginBottom:8}}/>
+      <div style={{display:"flex",gap:7,alignItems:"center",flexWrap:"wrap"}}>
+        <button onClick={rollDice} style={{background:T.gold,border:"none",borderRadius:7,color:"#07070c",fontWeight:700,fontSize:12,padding:"8px 14px",cursor:"pointer",fontFamily:"inherit"}}>🎲 Rolar d20</button>
+        <button onClick={confirmarAtaque} disabled={!dado||!acao.trim()}
+          style={{background:dado&&acao.trim()?"#1a2e1a":"#111",border:`1px solid ${dado&&acao.trim()?T.green:"#222"}`,color:dado&&acao.trim()?T.green:"#333",borderRadius:7,fontWeight:700,fontSize:12,padding:"8px 14px",cursor:dado&&acao.trim()?"pointer":"default",fontFamily:"inherit"}}>
+          ⚔️ Atacar
+        </button>
+        {dado&&<div style={{display:"flex",alignItems:"center",gap:5}}>
+          <span style={{fontSize:24,color:dadoColor,fontWeight:700}}>{dado}</span>
+          <span style={{fontSize:10,color:dadoColor}}>{dadoLabel}</span>
+        </div>}
+      </div>
+    </div>}
+
+    {/* Fim da batalha */}
+    {fase==="fim"&&resultado&&<div style={{borderTop:`1px solid ${T.border}`,padding:14}}>
+      <div style={{fontSize:15,color:resultado.vitoria?T.gold:T.red,fontWeight:700,marginBottom:10,textAlign:"center"}}>
+        {resultado.vitoria?"🏆 VITÓRIA!":"💀 DERROTA"}
+      </div>
+      {resultado.vitoria&&<>
+        <div style={{fontSize:12,color:T.green,marginBottom:4}}>✨ +{resultado.exp} EXP</div>
+        <div style={{fontSize:12,color:T.gold,marginBottom:4}}>💰 +{resultado.ouro} ouros</div>
+        {resultado.drops.length>0&&<div style={{fontSize:12,color:T.purple,marginBottom:8}}>
+          📦 {resultado.drops.map(d=>`${ITENS_DB[d]?.emoji}${ITENS_DB[d]?.nome||d}`).join(", ")}
+        </div>}
+      </>}
+      {!resultado.vitoria&&<div style={{fontSize:11,color:T.muted,marginBottom:8}}>Você ressurgiu com 1 HP em Varnok.</div>}
+      <button onClick={()=>onFim(resultado.vitoria)} style={{width:"100%",padding:"11px",background:T.surface,border:`1px solid ${T.gold}`,borderRadius:9,color:T.gold,fontSize:13,cursor:"pointer",fontFamily:"Georgia,serif"}}>
+        Continuar →
+      </button>
+    </div>}
   </div>;
 }
 
-// ── AUTH ──────────────────────────────────────────────────
-function AuthScreen({ onLogin }) {
-  const [modo,setModo]=useState("login");
-  const [username,setUsername]=useState("");
-  const [password,setPassword]=useState("");
-  const [heroId,setHeroId]=useState(null);
-  const [erro,setErro]=useState("");
-  const [loading,setLoading]=useState(false);
-  const [hover,setHover]=useState(null);
+// ── INVENTÁRIO ────────────────────────────────────────────
+function InventarioModal({ user, onFechar, onUpdate }) {
+  const h = user.hero;
+  const [selecionado, setSelecionado] = useState(null);
 
-  async function handleLogin() {
-    if(!username.trim()||!password.trim()) return setErro("Preencha todos os campos.");
-    setLoading(true); setErro("");
-    const u=await loadUser(username.trim());
-    if(!u){ setErro("Usuário não encontrado."); setLoading(false); return; }
-    if(u.password!==password){ setErro("Senha incorreta."); setLoading(false); return; }
-    u.lastSeen=Date.now(); await saveUser(username.trim(),u); onLogin(u); setLoading(false);
-  }
-  async function handleRegistro() {
-    if(!username.trim()||!password.trim()) return setErro("Preencha todos os campos.");
-    if(!heroId) return setErro("Escolha um personagem.");
-    if(username.trim().length<3) return setErro("Nome muito curto.");
-    setLoading(true); setErro("");
-    const existe=await loadUser(username.trim());
-    if(existe){ setErro("Nome já em uso."); setLoading(false); return; }
-    const u=makeUser(username.trim(),password,heroId);
-    await saveUser(username.trim(),u); onLogin(u); setLoading(false);
+  async function equipar(itemId, slot) {
+    let eq = JSON.parse(JSON.stringify(h.equipamentos));
+    if(slot==="arma") eq.arma = eq.arma===itemId?null:itemId;
+    else if(slot==="armadura") eq.armadura = eq.armadura===itemId?null:itemId;
+    else if(slot.startsWith("artefato")) {
+      const idx=parseInt(slot.split("_")[1]);
+      const newArr=[...eq.artefatos];
+      newArr[idx]=newArr[idx]===itemId?null:itemId;
+      eq.artefatos=newArr;
+    }
+    const newH={...h,equipamentos:eq};
+    const newUser={...user,hero:newH};
+    await saveUser(user.username,newUser);
+    onUpdate(newUser);
   }
 
-  return <div style={{minHeight:"100vh",background:T.bg,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"24px 16px"}}>
-    <div style={{textAlign:"center",marginBottom:28}}>
-      <div style={{fontSize:36,color:T.gold,fontWeight:700,letterSpacing:6,textShadow:`0 0 40px ${T.gold}44`}}>ELARIS</div>
-      <div style={{fontSize:11,color:T.goldDim,letterSpacing:4,marginTop:6}}>MUNDO ABERTO · MULTIPLAYER</div>
-      <div style={{width:60,height:1,background:`linear-gradient(90deg,transparent,${T.goldDim},transparent)`,margin:"12px auto 0"}}/>
-    </div>
-    <div style={{display:"flex",gap:4,marginBottom:18,background:T.surface,borderRadius:10,padding:4,border:`1px solid ${T.border}`}}>
-      {["login","registro"].map(m=>(
-        <button key={m} onClick={()=>{setModo(m);setErro("");setHeroId(null);}}
-          style={{padding:"7px 18px",borderRadius:7,border:"none",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,letterSpacing:1,background:modo===m?T.gold:"transparent",color:modo===m?"#07070c":T.muted,fontWeight:modo===m?700:400}}>
-          {m==="login"?"ENTRAR":"CRIAR CONTA"}
-        </button>
-      ))}
-    </div>
-    <div style={{width:"100%",maxWidth:360,display:"flex",flexDirection:"column",gap:9}}>
-      <input value={username} onChange={e=>setUsername(e.target.value)} placeholder="Nome de aventureiro" maxLength={20}
-        style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:8,color:T.text,fontFamily:"Georgia,serif",fontSize:14,padding:"10px 13px",outline:"none",boxSizing:"border-box",width:"100%"}}/>
-      <input value={password} onChange={e=>setPassword(e.target.value)} placeholder="Senha" type="password"
-        style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:8,color:T.text,fontFamily:"Georgia,serif",fontSize:14,padding:"10px 13px",outline:"none",boxSizing:"border-box",width:"100%"}}/>
-      {modo==="registro"&&<>
-        <div style={{fontSize:10,color:T.muted,letterSpacing:2,textAlign:"center",marginTop:4}}>ESCOLHA SEU PERSONAGEM</div>
-        {Object.values(HEROES_TEMPLATE).map(p=>(
-          <div key={p.id} onClick={()=>setHeroId(p.id)} onMouseEnter={()=>setHover(p.id)} onMouseLeave={()=>setHover(null)}
-            style={{borderRadius:12,overflow:"hidden",cursor:"pointer",
-              border:`1px solid ${heroId===p.id?p.cor+"88":hover===p.id?p.cor+"44":T.border}`,
-              background:heroId===p.id?`${p.cor}15`:T.surface,transition:"all 0.2s"}}>
-            <div style={{display:"flex"}}>
-              <div style={{width:4,background:`linear-gradient(180deg,${p.cor},${p.corDim})`,flexShrink:0}}/>
-              <div style={{padding:"10px 13px",flex:1}}>
-                <div style={{fontSize:13,color:heroId===p.id?p.cor:T.text,fontWeight:700}}>{p.emoji} {p.nome}</div>
-                <div style={{fontSize:10,color:T.muted,marginTop:1}}>{p.classe} · {p.espec}</div>
-              </div>
-            </div>
+  async function gastarPontoStatus(attr) {
+    if((h.pontosStatus||0)<=0) return;
+    const newAttrs={...h.attrs, [attr]:(h.attrs[attr]||0)+1};
+    const newH={...h,attrs:newAttrs,pontosStatus:(h.pontosStatus||0)-1};
+    const newUser={...user,hero:newH};
+    await saveUser(user.username,newUser);
+    onUpdate(newUser);
+  }
+
+  const inventario = h.inventario||[];
+  const eq = h.equipamentos;
+
+  const slotStyle = (ocupado, cor="#c9a96e") => ({
+    border:`1px dashed ${ocupado?cor+"88":T.border}`,background:ocupado?`${cor}08`:"transparent",
+    borderRadius:8,padding:"8px 10px",marginBottom:6,cursor:"pointer",transition:"all 0.2s",
+  });
+
+  return <div style={{position:"fixed",inset:0,zIndex:300,background:"rgba(4,4,8,0.97)",overflowY:"auto",padding:14}}>
+    <div style={{maxWidth:460,margin:"0 auto"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+        <div style={{fontSize:15,color:T.gold,fontWeight:700}}>🎒 INVENTÁRIO</div>
+        <button onClick={onFechar} style={{background:"transparent",border:`1px solid ${T.border}`,color:T.muted,borderRadius:8,padding:"4px 10px",cursor:"pointer"}}>✕</button>
+      </div>
+
+      {/* Pontos de Status */}
+      {(h.pontosStatus||0)>0&&<div style={{background:`${T.purple}15`,border:`1px solid ${T.purple}44`,borderRadius:10,padding:"10px 14px",marginBottom:12}}>
+        <div style={{fontSize:11,color:T.purple,fontWeight:700,marginBottom:8}}>✨ {h.pontosStatus} PONTOS DE STATUS DISPONÍVEIS</div>
+        <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+          {Object.keys(h.attrs).map(attr=>(
+            <button key={attr} onClick={()=>gastarPontoStatus(attr)}
+              style={{padding:"5px 10px",background:`${T.purple}15`,border:`1px solid ${T.purple}44`,borderRadius:6,color:T.purple,fontSize:11,cursor:"pointer",fontFamily:"inherit"}}>
+              +1 {ATTR_NOMES[attr]||attr} (atual: {getAttrTotal(h,attr)})
+            </button>
+          ))}
+        </div>
+      </div>}
+
+      {/* Slots de equipamento */}
+      <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:12,padding:14,marginBottom:14}}>
+        <div style={{fontSize:11,color:T.gold,fontWeight:700,marginBottom:10}}>⚔️ EQUIPAMENTOS</div>
+        <div style={slotStyle(!!eq.arma, T.orange)} onClick={()=>setSelecionado(selecionado==="arma"?null:"arma")}>
+          <div style={{fontSize:9,color:T.muted,marginBottom:3}}>🗡️ ARMA</div>
+          {eq.arma?<div style={{fontSize:12,color:T.orange}}>{ITENS_DB[eq.arma]?.emoji} {ITENS_DB[eq.arma]?.nome} — {ITENS_DB[eq.arma]?.desc}</div>
+            :<div style={{fontSize:11,color:T.muted,fontStyle:"italic"}}>Nenhuma arma equipada</div>}
+        </div>
+        <div style={slotStyle(!!eq.armadura, T.blue)} onClick={()=>setSelecionado(selecionado==="armadura"?null:"armadura")}>
+          <div style={{fontSize:9,color:T.muted,marginBottom:3}}>🛡️ ARMADURA</div>
+          {eq.armadura?<div style={{fontSize:12,color:T.blue}}>{ITENS_DB[eq.armadura]?.emoji} {ITENS_DB[eq.armadura]?.nome} — {ITENS_DB[eq.armadura]?.desc}</div>
+            :<div style={{fontSize:11,color:T.muted,fontStyle:"italic"}}>Nenhuma armadura equipada</div>}
+        </div>
+        {[0,1,2].map(i=>(
+          <div key={i} style={slotStyle(!!(eq.artefatos||[])[i], T.purple)} onClick={()=>setSelecionado(selecionado===`artefato_${i}`?null:`artefato_${i}`)}>
+            <div style={{fontSize:9,color:T.muted,marginBottom:3}}>💠 ARTEFATO {i+1}</div>
+            {(eq.artefatos||[])[i]?<div style={{fontSize:12,color:T.purple}}>{ITENS_DB[(eq.artefatos||[])[i]]?.emoji} {ITENS_DB[(eq.artefatos||[])[i]]?.nome}</div>
+              :<div style={{fontSize:11,color:T.muted,fontStyle:"italic"}}>Slot vazio</div>}
           </div>
         ))}
-      </>}
-      {erro&&<div style={{fontSize:11,color:T.red,textAlign:"center"}}>{erro}</div>}
-      <button onClick={modo==="login"?handleLogin:handleRegistro} disabled={loading}
-        style={{background:`linear-gradient(135deg,${T.gold},${T.goldDim})`,border:"none",borderRadius:10,color:"#07070c",fontWeight:700,fontSize:14,padding:"12px",cursor:"pointer",fontFamily:"Georgia,serif",marginTop:4}}>
-        {loading?"⏳...":modo==="login"?"⚔️ ENTRAR":"⚔️ CRIAR CONTA"}
-      </button>
+      </div>
+
+      {/* Itens no inventário */}
+      <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:12,padding:14}}>
+        <div style={{fontSize:11,color:T.gold,fontWeight:700,marginBottom:10}}>🎒 ITENS ({inventario.length})</div>
+        {inventario.length===0&&<div style={{fontSize:11,color:T.muted,fontStyle:"italic"}}>Inventário vazio. Derrote inimigos para obter itens!</div>}
+        {inventario.map((itemId,idx)=>{
+          const item=ITENS_DB[itemId];
+          if(!item) return null;
+          const isEquipavel=["arma","armadura","artefato"].includes(item.tipo);
+          const equip = selecionado && isEquipavel;
+          return <div key={idx} style={{background:"#0a0a14",border:`1px solid ${T.border}`,borderRadius:9,padding:"9px 12px",marginBottom:7,display:"flex",alignItems:"flex-start",gap:10}}>
+            <span style={{fontSize:20}}>{item.emoji}</span>
+            <div style={{flex:1}}>
+              <div style={{fontSize:12,color:T.text,fontWeight:600}}>{item.nome}
+                <span style={{fontSize:9,color:T.muted,marginLeft:6,padding:"1px 5px",background:T.surface,borderRadius:4}}>{item.tipo}</span>
+              </div>
+              <div style={{fontSize:10,color:T.muted,marginTop:1}}>{item.desc}</div>
+              <div style={{fontSize:9,color:T.gold,marginTop:1}}>💰 {item.valor} ouros</div>
+            </div>
+            {isEquipavel&&selecionado&&<button onClick={()=>equipar(itemId,selecionado)}
+              style={{padding:"4px 9px",background:`${T.gold}15`,border:`1px solid ${T.gold}44`,borderRadius:6,color:T.gold,fontSize:10,cursor:"pointer",flexShrink:0}}>
+              Equipar
+            </button>}
+          </div>;
+        })}
+      </div>
+
+      {/* Stats totais com equipamentos */}
+      <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:12,padding:14,marginTop:10}}>
+        <div style={{fontSize:11,color:T.gold,fontWeight:700,marginBottom:8}}>📊 ATRIBUTOS TOTAIS</div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
+          {Object.keys(h.attrs).map(attr=>(
+            <div key={attr} style={{display:"flex",justifyContent:"space-between",padding:"4px 8px",background:"#0a0a14",borderRadius:6}}>
+              <span style={{fontSize:10,color:T.muted}}>{ATTR_NOMES[attr]}</span>
+              <span style={{fontSize:11,color:T.gold,fontWeight:700}}>{getAttrTotal(h,attr)}</span>
+            </div>
+          ))}
+        </div>
+        <div style={{marginTop:8,display:"flex",gap:8,flexWrap:"wrap",fontSize:10}}>
+          <span style={{color:T.orange}}>⚔️ Dano +{getDanoBonus(h)}</span>
+          <span style={{color:T.blue}}>🛡️ Defesa +{getDefesaBonus(h)}</span>
+          <span style={{color:T.purple}}>🌀 Parry {Math.round((h.parryChance||0.05)*100)}%</span>
+        </div>
+      </div>
     </div>
   </div>;
 }
@@ -510,7 +566,7 @@ function AuthScreen({ onLogin }) {
 // ── MAPA ──────────────────────────────────────────────────
 function MapaModal({ hero, onViajar, onFechar }) {
   const [hover,setHover]=useState(null);
-  return <div style={{position:"fixed",inset:0,zIndex:300,background:"rgba(4,4,8,0.96)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:16}}>
+  return <div style={{position:"fixed",inset:0,zIndex:300,background:"rgba(4,4,8,0.96)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:14}}>
     <div style={{width:"100%",maxWidth:480}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
         <div style={{fontSize:15,color:T.gold,fontWeight:700}}>🗺️ MAPA DE ELARIS</div>
@@ -520,19 +576,276 @@ function MapaModal({ hero, onViajar, onFechar }) {
         {Object.values(REGIOES).map(r=>{
           const aqui=hero.regiao===r.id;
           const bloqueada=r.rankMinimo&&RANKS.indexOf(hero.rank)<RANKS.indexOf(r.rankMinimo);
+          const inimigos=INIMIGOS_POR_AREA[r.id]||[];
+          const boss=inimigos.find(e=>e.tipo==="boss");
           return <div key={r.id} onClick={()=>!bloqueada&&!aqui&&onViajar(r.id)}
             onMouseEnter={()=>setHover(r.id)} onMouseLeave={()=>setHover(null)}
-            style={{borderRadius:11,padding:12,cursor:bloqueada||aqui?"default":"pointer",
+            style={{borderRadius:11,padding:11,cursor:bloqueada||aqui?"default":"pointer",
               border:`1px solid ${aqui?r.cor+"88":hover===r.id&&!bloqueada?r.cor+"44":T.border}`,
               background:aqui?`${r.cor}15`:T.surface,opacity:bloqueada?0.4:1,transition:"all 0.2s"}}>
             <div style={{fontSize:18,marginBottom:3}}>{r.emoji}</div>
             <div style={{fontSize:11,color:aqui?r.cor:T.text,fontWeight:700}}>{r.nome}</div>
-            <div style={{fontSize:9,color:T.muted,marginTop:2,lineHeight:1.4}}>{r.desc}</div>
-            {aqui&&<div style={{fontSize:9,color:r.cor,marginTop:4}}>📍 Você está aqui</div>}
-            {bloqueada&&<div style={{fontSize:9,color:T.muted,marginTop:4}}>🔒 Rank {r.rankMinimo}</div>}
+            <div style={{fontSize:9,color:T.muted,marginTop:2}}>{r.desc}</div>
+            <div style={{marginTop:5,display:"flex",gap:4,flexWrap:"wrap"}}>
+              <span style={{fontSize:8,padding:"1px 5px",borderRadius:3,background:
+                r.perigo==="Seguro"?T.green+"22":r.perigo==="Médio"?T.orange+"22":r.perigo==="Alto"?T.red+"22":"#a78bfa22",
+                color:r.perigo==="Seguro"?T.green:r.perigo==="Médio"?T.orange:r.perigo==="Alto"?T.red:T.purple}}>
+                {r.perigo}
+              </span>
+              {boss&&<span style={{fontSize:8,padding:"1px 5px",borderRadius:3,background:`${T.purple}22`,color:T.purple}}>👑 Boss</span>}
+            </div>
+            {aqui&&<div style={{fontSize:9,color:r.cor,marginTop:3}}>📍 Você está aqui</div>}
+            {bloqueada&&<div style={{fontSize:9,color:T.muted,marginTop:3}}>🔒 {r.rankMinimo}</div>}
           </div>;
         })}
       </div>
+    </div>
+  </div>;
+}
+
+// ══════════════════════════════════════════════════════════
+// FERREIRO — RECEITAS E FORJA LIVRE
+// ══════════════════════════════════════════════════════════
+const RECEITAS = [
+  { id:"adaga_sombria", nome:"Adaga Sombria", emoji:"🗡️", tipo:"arma",
+    desc:"+1.5 dano. Bônus +1 AGI ao atacar de surpresa.",
+    materiais:{ garra_lobo:2, seda_sombra:1 }, ouro:20,
+    item:{ id:"adaga_sombria", nome:"Adaga Sombria", emoji:"🗡️", tipo:"arma", desc:"+1.5 dano, +1 AGI furtivo.", valor:120, efeito:{dano:1.5, AGI:1} } },
+  { id:"armadura_lobo", nome:"Armadura do Lobo", emoji:"🟤", tipo:"armadura",
+    desc:"+2 RES. Feita de pele de lobo resistente.",
+    materiais:{ pele_lobo:3, garra_lobo:1 }, ouro:30,
+    item:{ id:"armadura_lobo", nome:"Armadura do Lobo", emoji:"🟤", tipo:"armadura", desc:"+2 RES, -0.5 dano recebido.", valor:100, efeito:{RES:2, defesa:0.5} } },
+  { id:"lanca_grifo", nome:"Lança do Grifo", emoji:"🪶", tipo:"arma",
+    desc:"+2 dano. Leve e veloz. +1 AGI.",
+    materiais:{ pena_grifo:3, garra_grifo:2 }, ouro:40,
+    item:{ id:"lanca_grifo", nome:"Lança do Grifo", emoji:"🪶", tipo:"arma", desc:"+2 dano, +1 AGI.", valor:150, efeito:{dano:2, AGI:1} } },
+  { id:"escudo_golem", nome:"Escudo do Golem", emoji:"🪨", tipo:"armadura",
+    desc:"+3 RES. Pesado mas praticamente indestrutível.",
+    materiais:{ nucleo_pedra:2, fragmento_ferro:3 }, ouro:50,
+    item:{ id:"escudo_golem", nome:"Escudo do Golem", emoji:"🪨", tipo:"armadura", desc:"+3 RES, +1 defesa.", valor:180, efeito:{RES:3, defesa:1} } },
+  { id:"espada_chamas", nome:"Espada das Chamas", emoji:"🔥", tipo:"arma",
+    desc:"+2 dano de fogo. Causa queimadura.",
+    materiais:{ essencia_fogo:2, cristal_calor:1, fragmento_ferro:2 }, ouro:60,
+    item:{ id:"espada_chamas", nome:"Espada das Chamas", emoji:"🔥", tipo:"arma", desc:"+2 dano, aplica queimadura.", valor:200, efeito:{dano:2, danoFogo:1} } },
+  { id:"manto_névoa", nome:"Manto da Névoa", emoji:"🌫️", tipo:"armadura",
+    desc:"+1 RES +2 AGI. Feito de Essência de Névoa.",
+    materiais:{ essencia_névoa:3, seda_sombra:2 }, ouro:45,
+    item:{ id:"manto_névoa", nome:"Manto da Névoa", emoji:"🌫️", tipo:"armadura", desc:"+1 RES, +2 AGI.", valor:160, efeito:{RES:1, AGI:2, defesa:0.5} } },
+  { id:"garras_escorpiao", nome:"Garras do Escorpião", emoji:"🦂", tipo:"arma",
+    desc:"+1.5 dano + veneno ao acertar.",
+    materiais:{ ferrão_escorpiao:2, veneno_escorpiao:1 }, ouro:35,
+    item:{ id:"garras_escorpiao", nome:"Garras do Escorpião", emoji:"🦂", tipo:"arma", desc:"+1.5 dano, aplica veneno.", valor:140, efeito:{dano:1.5} } },
+  { id:"armadura_serpente", nome:"Armadura da Serpente", emoji:"🟡", tipo:"armadura",
+    desc:"+2 RES +1 FOR. Escamas ancestrais.",
+    materiais:{ escama_areia:3, escama_anciã:1 }, ouro:80,
+    item:{ id:"armadura_serpente", nome:"Armadura da Serpente", emoji:"🟡", tipo:"armadura", desc:"+2 RES, +1 FOR.", valor:220, efeito:{RES:2, FOR:1, defesa:1} } },
+  { id:"espada_raio", nome:"Espada do Raio", emoji:"⚡", tipo:"arma",
+    desc:"+2 dano elétrico. Chance de paralisar.",
+    materiais:{ escama_raio:3, nucleo_trovao:1 }, ouro:70,
+    item:{ id:"espada_raio", nome:"Espada do Raio", emoji:"⚡", tipo:"arma", desc:"+2 dano, chance de choque.", valor:190, efeito:{dano:2, danoElemental:1} } },
+  { id:"armadura_yeti", nome:"Armadura do Yeti", emoji:"🤍", tipo:"armadura",
+    desc:"+2 RES. Resistência ao frio. +1 FOR.",
+    materiais:{ pelo_yeti:3, gelo_eterno:1 }, ouro:55,
+    item:{ id:"armadura_yeti", nome:"Armadura do Yeti", emoji:"🤍", tipo:"armadura", desc:"+2 RES, +1 FOR, resistência a gelo.", valor:170, efeito:{RES:2, FOR:1, defesa:0.5} } },
+];
+
+function FerreiroModal({ user, onFechar, onUpdate }) {
+  const [aba, setAba] = useState("receitas"); // receitas | livre
+  const [materiaisLivres, setMateriaisLivres] = useState([]);
+  const [forjando, setForjando] = useState(false);
+  const [resultadoLivre, setResultadoLivre] = useState(null);
+  const [msg, setMsg] = useState("");
+
+  const h = user.hero;
+  const inv = h.inventario || [];
+
+  // Materiais disponíveis no inventário
+  const contarMaterial = (id) => inv.filter(x=>x===id).length;
+  const temReceita = (r) => Object.entries(r.materiais).every(([id,qty])=>contarMaterial(id)>=qty) && (h.ouro||0)>=r.ouro;
+
+  async function forjarReceita(receita) {
+    if(!temReceita(receita)) return;
+    let newInv = [...inv];
+    // Remove materiais
+    Object.entries(receita.materiais).forEach(([id,qty])=>{
+      let removed=0;
+      newInv = newInv.filter(x=>{ if(x===id&&removed<qty){ removed++; return false; } return true; });
+    });
+    // Adiciona item
+    newInv.push(receita.item.id);
+    // Adiciona item ao DB dinamicamente
+    ITENS_DB[receita.item.id] = receita.item;
+    const newH={...h, inventario:newInv, ouro:(h.ouro||0)-receita.ouro};
+    const newUser={...user,hero:newH};
+    await saveUser(user.username,newUser);
+    onUpdate(newUser);
+    setMsg(`✅ ${receita.item.emoji} ${receita.item.nome} forjada com sucesso!`);
+    setTimeout(()=>setMsg(""),3000);
+  }
+
+  function toggleMaterialLivre(id) {
+    setMateriaisLivres(prev => prev.includes(id)
+      ? prev.filter(x=>x!==id)
+      : prev.length<6 ? [...prev,id] : prev);
+  }
+
+  async function forjarLivre() {
+    if(materiaisLivres.length<1||forjando) return;
+    setForjando(true); setResultadoLivre(null);
+    const listaMats = materiaisLivres.map(id=>ITENS_DB[id]?.nome||id).join(", ");
+    try {
+      const res = await fetch("https://api.anthropic.com/v1/messages",{
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+          model:"claude-sonnet-4-20250514", max_tokens:600,
+          system:`Você é Durk, o ferreiro ranzinza de Varnok no RPG ELARIS. O jogador trouxe materiais para forjar algo.
+Crie um item único baseado nos materiais fornecidos. Responda SOMENTE com JSON:
+{"nome":"nome do item","emoji":"emoji","tipo":"arma|armadura|artefato","desc":"descrição curta e dramática","efeito":{"dano":0,"RES":0,"AGI":0,"FOR":0,"ENE":0,"CTR":0,"defesa":0},"fala":"frase do Durk ranzinza sobre o item (máx 1 linha)","valor":50}
+Regras: tipo arma se maioria for garras/dentes/ferrões. tipo armadura se maioria for peles/escamas/pelos. tipo artefato se maioria for essências/cristais/núcleos. Balanceie os efeitos conforme raridade dos materiais.`,
+          messages:[{role:"user",content:`Materiais: ${listaMats}`}]
+        })
+      });
+      const data = await res.json();
+      const txt = data.content?.find(b=>b.type==="text")?.text||"{}";
+      let item = {}; try{ item=JSON.parse(txt.replace(/```json|```/g,"").trim()); }catch(e){}
+      if(item.nome){
+        const itemId = `forjado_${Date.now()}`;
+        const novoItem = {...item, id:itemId};
+        ITENS_DB[itemId] = novoItem;
+        // Remove materiais do inv
+        let newInv=[...inv];
+        materiaisLivres.forEach(id=>{ const idx=newInv.indexOf(id); if(idx>=0) newInv.splice(idx,1); });
+        newInv.push(itemId);
+        const newH={...h,inventario:newInv};
+        const newUser={...user,hero:newH};
+        await saveUser(user.username,newUser);
+        onUpdate(newUser);
+        setResultadoLivre({...novoItem,id:itemId});
+        setMateriaisLivres([]);
+      }
+    } catch(e){ setMsg("Durk não conseguiu forjar isso. Tente outros materiais."); }
+    setForjando(false);
+  }
+
+  // Materiais únicos no inventário
+  const materiaisNoInv = [...new Set(inv.filter(id=>ITENS_DB[id]?.tipo==="material"))];
+
+  return <div style={{position:"fixed",inset:0,zIndex:300,background:"rgba(4,4,8,0.97)",overflowY:"auto",padding:14}}>
+    <div style={{maxWidth:460,margin:"0 auto"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+        <div>
+          <div style={{fontSize:15,color:T.gold,fontWeight:700}}>⚒️ FERREIRO DURK</div>
+          <div style={{fontSize:10,color:T.muted,fontStyle:"italic"}}>"Traga materiais. Eu faço o resto. Ou não."</div>
+        </div>
+        <button onClick={onFechar} style={{background:"transparent",border:`1px solid ${T.border}`,color:T.muted,borderRadius:8,padding:"4px 10px",cursor:"pointer"}}>✕</button>
+      </div>
+
+      {msg&&<div style={{background:`${T.green}15`,border:`1px solid ${T.green}44`,borderRadius:8,padding:"8px 12px",marginBottom:10,fontSize:12,color:T.green}}>{msg}</div>}
+
+      {/* Abas */}
+      <div style={{display:"flex",gap:4,marginBottom:14,background:T.surface,borderRadius:9,padding:4,border:`1px solid ${T.border}`}}>
+        {[["receitas","📋 Receitas"],["livre","🔥 Forja Livre"]].map(([id,lbl])=>(
+          <button key={id} onClick={()=>setAba(id)}
+            style={{flex:1,padding:"7px",borderRadius:7,border:"none",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,
+              background:aba===id?T.gold:"transparent",color:aba===id?"#07070c":T.muted,fontWeight:aba===id?700:400}}>
+            {lbl}
+          </button>
+        ))}
+      </div>
+
+      {aba==="receitas"&&<>
+        <div style={{fontSize:10,color:T.muted,marginBottom:10}}>Você tem 💰 {h.ouro} ouros</div>
+        {RECEITAS.map(r=>{
+          const pode=temReceita(r);
+          return <div key={r.id} style={{background:T.surface,border:`1px solid ${pode?T.gold+"44":T.border}`,borderRadius:12,padding:14,marginBottom:10,opacity:pode?1:0.7}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:6}}>
+              <div style={{fontSize:13,color:pode?T.gold:T.muted,fontWeight:700}}>{r.emoji} {r.nome}</div>
+              <span style={{fontSize:9,padding:"2px 6px",borderRadius:4,background:r.tipo==="arma"?`${T.orange}22`:`${T.blue}22`,color:r.tipo==="arma"?T.orange:T.blue}}>{r.tipo}</span>
+            </div>
+            <div style={{fontSize:11,color:T.muted,marginBottom:8,fontStyle:"italic"}}>{r.desc}</div>
+            <div style={{fontSize:10,color:T.muted,marginBottom:3}}>Materiais necessários:</div>
+            <div style={{display:"flex",flexWrap:"wrap",gap:5,marginBottom:8}}>
+              {Object.entries(r.materiais).map(([id,qty])=>{
+                const tem=contarMaterial(id);
+                const ok=tem>=qty;
+                return <span key={id} style={{fontSize:9,padding:"2px 7px",borderRadius:5,background:ok?`${T.green}15`:`${T.red}15`,border:`1px solid ${ok?T.green:T.red}44`,color:ok?T.green:T.red}}>
+                  {ITENS_DB[id]?.emoji||"📦"} {ITENS_DB[id]?.nome||id} {tem}/{qty}
+                </span>;
+              })}
+              <span style={{fontSize:9,padding:"2px 7px",borderRadius:5,background:`${T.gold}15`,border:`1px solid ${T.gold}44`,color:T.gold}}>
+                💰 {r.ouro} ouros
+              </span>
+            </div>
+            <button onClick={()=>forjarReceita(r)} disabled={!pode}
+              style={{width:"100%",padding:"9px",background:pode?"#1a1a0a":"#111",border:`1px solid ${pode?T.gold:"#222"}`,borderRadius:9,color:pode?T.gold:"#333",fontSize:12,cursor:pode?"pointer":"default",fontFamily:"Georgia,serif",fontWeight:700}}>
+              {pode?"⚒️ Forjar":"❌ Materiais insuficientes"}
+            </button>
+          </div>;
+        })}
+      </>}
+
+      {aba==="livre"&&<>
+        <div style={{background:"#0a0a0e",border:`1px solid ${T.border}`,borderRadius:10,padding:"10px 14px",marginBottom:12}}>
+          <div style={{fontSize:11,color:T.gold,marginBottom:4}}>Como funciona</div>
+          <div style={{fontSize:10,color:T.muted,lineHeight:1.6}}>Selecione até 6 materiais do seu inventário. Durk vai criar algo único baseado no que você trouxer. Resultado imprevisível — pode ser ótimo ou apenas ok.</div>
+        </div>
+
+        {/* Materiais selecionados */}
+        <div style={{marginBottom:12}}>
+          <div style={{fontSize:10,color:T.muted,letterSpacing:2,marginBottom:7}}>SELECIONADOS ({materiaisLivres.length}/6)</div>
+          {materiaisLivres.length===0
+            ?<div style={{fontSize:11,color:T.muted,fontStyle:"italic",textAlign:"center",padding:10}}>Selecione materiais abaixo</div>
+            :<div style={{display:"flex",flexWrap:"wrap",gap:5}}>
+              {materiaisLivres.map((id,i)=>(
+                <span key={i} onClick={()=>toggleMaterialLivre(id)}
+                  style={{fontSize:10,padding:"3px 9px",borderRadius:6,background:`${T.gold}15`,border:`1px solid ${T.gold}44`,color:T.gold,cursor:"pointer"}}>
+                  {ITENS_DB[id]?.emoji} {ITENS_DB[id]?.nome} ✕
+                </span>
+              ))}
+            </div>}
+        </div>
+
+        {/* Inventário de materiais */}
+        <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:10,padding:12,marginBottom:12}}>
+          <div style={{fontSize:10,color:T.muted,letterSpacing:2,marginBottom:8}}>SEUS MATERIAIS</div>
+          {materiaisNoInv.length===0
+            ?<div style={{fontSize:11,color:T.muted,fontStyle:"italic"}}>Nenhum material. Derrote inimigos para obter!</div>
+            :<div style={{display:"flex",flexDirection:"column",gap:5}}>
+              {materiaisNoInv.map(id=>{
+                const item=ITENS_DB[id]; if(!item) return null;
+                const qtd=contarMaterial(id);
+                const sel=materiaisLivres.includes(id);
+                return <div key={id} onClick={()=>toggleMaterialLivre(id)}
+                  style={{display:"flex",alignItems:"center",gap:8,padding:"7px 10px",background:sel?`${T.gold}10`:"#0a0a14",border:`1px solid ${sel?T.gold+"44":T.border}`,borderRadius:8,cursor:"pointer",transition:"all 0.2s"}}>
+                  <span style={{fontSize:18}}>{item.emoji}</span>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:11,color:sel?T.gold:T.text,fontWeight:sel?600:400}}>{item.nome}</div>
+                    <div style={{fontSize:9,color:T.muted}}>{item.desc}</div>
+                  </div>
+                  <span style={{fontSize:10,color:T.muted}}>x{qtd}</span>
+                  {sel&&<span style={{fontSize:10,color:T.gold}}>✓</span>}
+                </div>;
+              })}
+            </div>}
+        </div>
+
+        <button onClick={forjarLivre} disabled={materiaisLivres.length===0||forjando}
+          style={{width:"100%",padding:"12px",background:materiaisLivres.length>0&&!forjando?"#1a1205":"#111",border:`1px solid ${materiaisLivres.length>0&&!forjando?T.gold:"#222"}`,borderRadius:10,color:materiaisLivres.length>0&&!forjando?T.gold:"#333",fontSize:13,cursor:materiaisLivres.length>0&&!forjando?"pointer":"default",fontFamily:"Georgia,serif",fontWeight:700}}>
+          {forjando?"⏳ Durk está forjando...":"⚒️ FORJAR"}
+        </button>
+
+        {resultadoLivre&&<div style={{marginTop:12,background:`${T.gold}10`,border:`1px solid ${T.gold}44`,borderRadius:12,padding:14}}>
+          <div style={{fontSize:10,color:T.goldDim,letterSpacing:2,marginBottom:6}}>✨ ITEM CRIADO</div>
+          <div style={{fontSize:16,color:T.gold,fontWeight:700,marginBottom:4}}>{resultadoLivre.emoji} {resultadoLivre.nome}</div>
+          <div style={{fontSize:11,color:T.text,marginBottom:6,fontStyle:"italic"}}>{resultadoLivre.desc}</div>
+          {resultadoLivre.fala&&<div style={{fontSize:10,color:T.muted,fontStyle:"italic",borderLeft:`2px solid ${T.goldDim}`,paddingLeft:8}}>Durk: "{resultadoLivre.fala}"</div>}
+          <div style={{marginTop:8,display:"flex",gap:6,flexWrap:"wrap"}}>
+            {Object.entries(resultadoLivre.efeito||{}).filter(([,v])=>v>0).map(([k,v])=>(
+              <span key={k} style={{fontSize:9,padding:"2px 7px",borderRadius:4,background:`${T.green}15`,border:`1px solid ${T.green}44`,color:T.green}}>+{v} {k}</span>
+            ))}
+          </div>
+        </div>}
+      </>}
     </div>
   </div>;
 }
@@ -552,7 +865,7 @@ function GrupoModal({ user, onFechar, onSave }) {
   async function convidar() {
     if(!resultado) return;
     const gid=`${[user.username,resultado.username].sort().join("-")}`.toLowerCase();
-    const g=makeGroup(gid,[user.username,resultado.username]);
+    const g={id:gid,members:[user.username,resultado.username],historiaCapitulo:0,historiaEscolhas:{},updatedAt:Date.now()};
     await saveGroup(gid,g);
     const u1={...user,grupo:gid}; await saveUser(user.username,u1);
     const u2={...resultado,grupo:gid}; await saveUser(resultado.username,u2);
@@ -561,69 +874,124 @@ function GrupoModal({ user, onFechar, onSave }) {
   async function sair() {
     const u={...user,grupo:null}; await saveUser(user.username,u); setGrupo(null); onSave(u);
   }
-  return <div style={{position:"fixed",inset:0,zIndex:300,background:"rgba(4,4,8,0.96)",display:"flex",alignItems:"center",justifyContent:"center",padding:16}}>
-    <div style={{width:"100%",maxWidth:400,background:T.surface,border:`1px solid ${T.border}`,borderRadius:16,padding:20}}>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+  return <div style={{position:"fixed",inset:0,zIndex:300,background:"rgba(4,4,8,0.96)",display:"flex",alignItems:"center",justifyContent:"center",padding:14}}>
+    <div style={{width:"100%",maxWidth:380,background:T.surface,border:`1px solid ${T.border}`,borderRadius:14,padding:18}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
         <div style={{fontSize:14,color:T.gold,fontWeight:700}}>👥 GRUPO</div>
-        <button onClick={onFechar} style={{background:"transparent",border:`1px solid ${T.border}`,color:T.muted,borderRadius:8,padding:"4px 10px",cursor:"pointer"}}>✕</button>
+        <button onClick={onFechar} style={{background:"transparent",border:`1px solid ${T.border}`,color:T.muted,borderRadius:7,padding:"3px 9px",cursor:"pointer"}}>✕</button>
       </div>
       {grupo?<>
-        <div style={{fontSize:10,color:T.muted,marginBottom:8}}>Membros:</div>
-        {grupo.members.map(m=><div key={m} style={{background:"#0a0a14",border:`1px solid ${m===user.username?T.gold+"44":T.border}`,borderRadius:9,padding:"9px 12px",marginBottom:7,display:"flex",alignItems:"center",gap:8}}>
-          <span>{HEROES_TEMPLATE[m===user.username?user.heroId:"balo"]?.emoji||"⚔️"}</span>
-          <div style={{fontSize:12,color:m===user.username?T.gold:T.text,fontWeight:600}}>{m}{m===user.username&&" (você)"}</div>
+        {grupo.members.map(m=><div key={m} style={{background:"#0a0a14",border:`1px solid ${m===user.username?T.gold+"44":T.border}`,borderRadius:8,padding:"8px 11px",marginBottom:6,fontSize:12,color:m===user.username?T.gold:T.text,fontWeight:600}}>
+          ⚔️ {m}{m===user.username&&" (você)"}
         </div>)}
-        <div style={{fontSize:10,color:T.muted,fontStyle:"italic",marginBottom:10}}>ID do grupo: {grupo.id}</div>
-        <button onClick={sair} style={{width:"100%",padding:"9px",background:"#1a0808",border:`1px solid ${T.red}44`,borderRadius:9,color:T.red,fontSize:11,cursor:"pointer",fontFamily:"Georgia,serif"}}>Sair do Grupo</button>
+        <button onClick={sair} style={{width:"100%",marginTop:8,padding:"8px",background:"#1a0808",border:`1px solid ${T.red}44`,borderRadius:8,color:T.red,fontSize:11,cursor:"pointer",fontFamily:"Georgia,serif"}}>Sair do Grupo</button>
       </>:<>
-        <div style={{fontSize:11,color:T.muted,marginBottom:10}}>Busque um jogador pelo nome para formar grupo.</div>
-        <div style={{display:"flex",gap:7,marginBottom:10}}>
+        <div style={{display:"flex",gap:6,marginBottom:9}}>
           <input value={busca} onChange={e=>setBusca(e.target.value)} placeholder="Nome do jogador..." onKeyDown={e=>e.key==="Enter"&&buscar()}
-            style={{flex:1,background:"#0a0a14",border:`1px solid ${T.border}`,borderRadius:7,color:T.text,fontFamily:"Georgia,serif",fontSize:13,padding:"8px 11px",outline:"none"}}/>
-          <button onClick={buscar} disabled={buscando} style={{background:T.gold,border:"none",borderRadius:7,color:"#07070c",fontWeight:700,fontSize:12,padding:"8px 12px",cursor:"pointer"}}>🔍</button>
+            style={{flex:1,background:"#0a0a14",border:`1px solid ${T.border}`,borderRadius:7,color:T.text,fontFamily:"Georgia,serif",fontSize:13,padding:"8px 10px",outline:"none"}}/>
+          <button onClick={buscar} disabled={buscando} style={{background:T.gold,border:"none",borderRadius:7,color:"#07070c",fontWeight:700,fontSize:12,padding:"8px 11px",cursor:"pointer"}}>🔍</button>
         </div>
         {erro&&<div style={{fontSize:11,color:T.red,marginBottom:7}}>{erro}</div>}
-        {resultado&&<div style={{background:"#0a0a14",border:`1px solid ${T.green}44`,borderRadius:9,padding:"11px 13px",marginBottom:9}}>
-          <div style={{fontSize:12,color:T.green,fontWeight:600}}>✅ {resultado.username} encontrado!</div>
-          <button onClick={convidar} style={{marginTop:7,width:"100%",padding:"7px",background:"#0a1a0a",border:`1px solid ${T.green}`,borderRadius:7,color:T.green,fontSize:11,cursor:"pointer",fontFamily:"Georgia,serif"}}>Convidar</button>
+        {resultado&&<div style={{background:"#0a0a14",border:`1px solid ${T.green}44`,borderRadius:8,padding:"10px 12px",marginBottom:8}}>
+          <div style={{fontSize:12,color:T.green,fontWeight:600}}>✅ {resultado.username}</div>
+          <button onClick={convidar} style={{marginTop:6,width:"100%",padding:"6px",background:"#0a1a0a",border:`1px solid ${T.green}`,borderRadius:7,color:T.green,fontSize:11,cursor:"pointer",fontFamily:"Georgia,serif"}}>Convidar</button>
         </div>}
       </>}
     </div>
   </div>;
 }
 
+// ── AUTH ──────────────────────────────────────────────────
+function AuthScreen({ onLogin }) {
+  const [modo,setModo]=useState("login"); const [username,setUsername]=useState("");
+  const [password,setPassword]=useState(""); const [heroId,setHeroId]=useState(null);
+  const [erro,setErro]=useState(""); const [loading,setLoading]=useState(false); const [hover,setHover]=useState(null);
+  async function handleLogin() {
+    if(!username.trim()||!password.trim()) return setErro("Preencha todos os campos.");
+    setLoading(true); setErro("");
+    const u=await loadUser(username.trim());
+    if(!u){ setErro("Usuário não encontrado."); setLoading(false); return; }
+    if(u.password!==password){ setErro("Senha incorreta."); setLoading(false); return; }
+    u.lastSeen=Date.now(); await saveUser(username.trim(),u); onLogin(u); setLoading(false);
+  }
+  async function handleRegistro() {
+    if(!username.trim()||!password.trim()||!heroId) return setErro("Preencha tudo e escolha um personagem.");
+    if(username.trim().length<3) return setErro("Nome muito curto.");
+    setLoading(true); setErro("");
+    const existe=await loadUser(username.trim());
+    if(existe){ setErro("Nome já em uso."); setLoading(false); return; }
+    const u=makeUser(username.trim(),password,heroId);
+    await saveUser(username.trim(),u); onLogin(u); setLoading(false);
+  }
+  return <div style={{minHeight:"100vh",background:T.bg,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"24px 16px"}}>
+    <div style={{textAlign:"center",marginBottom:24}}>
+      <div style={{fontSize:36,color:T.gold,fontWeight:700,letterSpacing:6,textShadow:`0 0 40px ${T.gold}44`}}>ELARIS</div>
+      <div style={{fontSize:11,color:T.goldDim,letterSpacing:4,marginTop:6}}>MUNDO ABERTO · MULTIPLAYER</div>
+    </div>
+    <div style={{display:"flex",gap:4,marginBottom:16,background:T.surface,borderRadius:10,padding:4,border:`1px solid ${T.border}`}}>
+      {["login","registro"].map(m=>(
+        <button key={m} onClick={()=>{setModo(m);setErro("");setHeroId(null);}}
+          style={{padding:"7px 16px",borderRadius:7,border:"none",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:12,background:modo===m?T.gold:"transparent",color:modo===m?"#07070c":T.muted,fontWeight:modo===m?700:400}}>
+          {m==="login"?"ENTRAR":"CRIAR CONTA"}
+        </button>
+      ))}
+    </div>
+    <div style={{width:"100%",maxWidth:340,display:"flex",flexDirection:"column",gap:8}}>
+      <input value={username} onChange={e=>setUsername(e.target.value)} placeholder="Nome de aventureiro" maxLength={20}
+        style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:8,color:T.text,fontFamily:"Georgia,serif",fontSize:14,padding:"10px 12px",outline:"none",boxSizing:"border-box",width:"100%"}}/>
+      <input value={password} onChange={e=>setPassword(e.target.value)} placeholder="Senha" type="password"
+        style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:8,color:T.text,fontFamily:"Georgia,serif",fontSize:14,padding:"10px 12px",outline:"none",boxSizing:"border-box",width:"100%"}}/>
+      {modo==="registro"&&Object.values(HEROES_TEMPLATE).map(p=>(
+        <div key={p.id} onClick={()=>setHeroId(p.id)} onMouseEnter={()=>setHover(p.id)} onMouseLeave={()=>setHover(null)}
+          style={{borderRadius:11,overflow:"hidden",cursor:"pointer",border:`1px solid ${heroId===p.id?p.cor+"88":hover===p.id?p.cor+"44":T.border}`,background:heroId===p.id?`${p.cor}15`:T.surface,transition:"all 0.2s"}}>
+          <div style={{display:"flex"}}>
+            <div style={{width:4,background:`linear-gradient(180deg,${p.cor},${p.corDim})`,flexShrink:0}}/>
+            <div style={{padding:"10px 12px",flex:1}}>
+              <div style={{fontSize:13,color:heroId===p.id?p.cor:T.text,fontWeight:700}}>{p.emoji} {p.nome}</div>
+              <div style={{fontSize:10,color:T.muted,marginTop:1}}>{p.classe} · Parry {Math.round(p.parryChance*100)}%</div>
+            </div>
+          </div>
+        </div>
+      ))}
+      {erro&&<div style={{fontSize:11,color:T.red,textAlign:"center"}}>{erro}</div>}
+      <button onClick={modo==="login"?handleLogin:handleRegistro} disabled={loading}
+        style={{background:`linear-gradient(135deg,${T.gold},${T.goldDim})`,border:"none",borderRadius:10,color:"#07070c",fontWeight:700,fontSize:14,padding:"12px",cursor:"pointer",fontFamily:"Georgia,serif"}}>
+        {loading?"⏳...":modo==="login"?"⚔️ ENTRAR":"⚔️ CRIAR CONTA"}
+      </button>
+    </div>
+  </div>;
+}
+
 // ── GAME SCREEN ───────────────────────────────────────────
 function GameScreen({ user, onUpdate, onLogout }) {
-  const [acao,setAcao]=useState(""); const [dado,setDado]=useState(null);
-  const [diceVal,setDiceVal]=useState(null); const [showDice,setShowDice]=useState(false);
-  const [submitting,setSubmitting]=useState(false); const [narracao,setNarracao]=useState(user.narracao||"");
-  const [tab,setTab]=useState("mundo");
-  const [showMapa,setShowMapa]=useState(false); const [showGrupo,setShowGrupo]=useState(false);
-  const [showGuilda,setShowGuilda]=useState(false); const [showHistoria,setShowHistoria]=useState(false);
-  const [grupo,setGrupo]=useState(null); const [membrosData,setMembrosData]=useState({});
-  const bottomRef=useRef(null);
-  const pollRef=useRef(null);
+  const [batalhaAtiva, setBatalhaAtiva] = useState(null);
+  const [tab, setTab] = useState("mundo");
+  const [showMapa, setShowMapa] = useState(false);
+  const [showGrupo, setShowGrupo] = useState(false);
+  const [showInv, setShowInv] = useState(false);
+  const [showFerreiro, setShowFerreiro] = useState(false);
+  const [narracao, setNarracao] = useState(user.narracao||"");
+  const [acao, setAcao] = useState(""); const [dado, setDado] = useState(null);
+  const [diceVal, setDiceVal] = useState(null); const [showDice, setShowDice] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const bottomRef = useRef(null);
 
   useEffect(()=>{ bottomRef.current?.scrollIntoView({behavior:"smooth"}); },[narracao]);
 
+  // Trigger de encontro aleatório ao entrar numa área
   useEffect(()=>{
-    if(!user.grupo) return;
-    async function syncGrupo() {
-      const g=await loadGroup(user.grupo);
-      if(g){ setGrupo(g);
-        const md={};
-        await Promise.all(g.members.map(async m=>{ const u=await loadUser(m); if(u) md[m]=u; }));
-        setMembrosData(md);
-      }
+    const regiao = user.hero.regiao;
+    if(regiao==="varnok"||batalhaAtiva) return;
+    const chance = regiao==="ruinas"?0.7:regiao==="deserto"||regiao==="vale"||regiao==="cordilheira"?0.55:0.4;
+    if(Math.random()<chance){
+      const mob = sortearInimigo(regiao, false);
+      if(mob) setTimeout(()=>setBatalhaAtiva(mob), 1200);
     }
-    syncGrupo();
-    pollRef.current=setInterval(syncGrupo,3000);
-    return()=>clearInterval(pollRef.current);
-  },[user.grupo]);
+  },[user.hero.regiao]);
 
-  const h=user.hero;
-  const regiao=REGIOES[h.regiao]||REGIOES.varnok;
-  const emVarnok=h.regiao==="varnok";
+  const h = user.hero;
+  const regiao = REGIOES[h.regiao]||REGIOES.varnok;
+  const emVarnok = h.regiao==="varnok";
   const dadoColor=!dado?"#666":dado<=5?T.red:dado<=10?T.orange:dado<=15?T.gold:dado<20?T.green:T.purple;
   const dadoLabel=!dado?"":dado<=5?"Falha crítica!":dado<=10?"Ruim":dado<=15?"Normal":dado<20?"Muito bom!":"CRÍTICO! 🔥";
 
@@ -632,197 +1000,161 @@ function GameScreen({ user, onUpdate, onLogout }) {
 
   async function viajar(rId) {
     const newH={...h,regiao:rId};
-    const newUser={...user,hero:newH,narracao:`Você viajou para ${REGIOES[rId].emoji} ${REGIOES[rId].nome}.`};
+    const newUser={...user,hero:newH,narracao:`Você chegou em ${REGIOES[rId].emoji} ${REGIOES[rId].nome}.`};
     await saveUser(user.username,newUser); onUpdate(newUser);
-    setNarracao(newUser.narracao); setShowMapa(false);
+    setNarracao(newUser.narracao); setShowMapa(false); setBatalhaAtiva(null);
   }
 
-  async function handleEscolha(capId, escolha) {
-    if(!grupo) return;
-    const key=`cap${capId}_${user.username}`;
-    const newGrupo={...grupo, historiaEscolhas:{...(grupo.historiaEscolhas||{}), [key]:escolha.texto}, aguardandoEscolha:true, updatedAt:Date.now()};
-    // Verifica se todos escolheram
-    const capObj=HISTORIA[capId];
-    const todosEscolheram=newGrupo.grupo?.members?.every(m=>newGrupo.historiaEscolhas[`cap${capId}_${m}`]) ||
-      grupo.members.every(m=>m===user.username||newGrupo.historiaEscolhas[`cap${capId}_${m}`]);
-    if(todosEscolheram||grupo.members.length===1) {
-      newGrupo.aguardandoEscolha=false;
-      newGrupo.historiaEscolhas[`cap${capId}_resultado`]=escolha.resultado;
-      newGrupo.historiaCapitulo=capId+1;
-      if(!capObj.proximoCapitulo) newGrupo.historiaCompleta=true;
-    }
-    await saveGroup(grupo.id,newGrupo);
-    setGrupo(newGrupo);
+  function iniciarBatalhaComBoss() {
+    const boss = sortearInimigo(h.regiao, true);
+    if(boss) setBatalhaAtiva(boss);
+    else setNarracao("Nenhum boss encontrado nesta região.");
   }
 
   async function confirmar() {
     if(!dado||!acao.trim()||submitting) return;
     setSubmitting(true);
-    const sys=buildPrompt(user,acao,dado,dadoLabel);
     try {
       const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:sys,messages:[{role:"user",content:acao}]})});
+        body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:800,
+          system:`Você é o Mestre do RPG ELARIS. Narre em português — frases curtas, estilo sombrio. REGIÃO: ${regiao.nome}. PERSONAGEM: ${h.nome} HP:${h.hp}/${h.maxHp} EN:${h.en}/${h.maxEn}. ${emVarnok?"VARNOK: Maren, Durk, Taverna":"Exploração livre."} AÇÃO: "${acao}" d20:${dado}(${dadoLabel}). Responda JSON: {"narracao":"texto","ganhouOuro":0,"curaHeroi":0}`,
+          messages:[{role:"user",content:acao}]})});
       const data=await res.json();
       const txt=data.content?.find(b=>b.type==="text")?.text||"{}";
-      let result={};
-      try{ result=JSON.parse(txt.replace(/```json|```/g,"").trim()); }catch(e){ result={narracao:txt}; }
-      const narr=result.narracao||"O Mestre observa.";
-      setNarracao(narr);
+      let result={}; try{ result=JSON.parse(txt.replace(/```json|```/g,"").trim()); }catch(e){ result={narracao:txt}; }
+      setNarracao(result.narracao||"O Mestre observa.");
       let newH={...h};
-      let newLog=[...(user.log||[])];
-      if(result.danoHeroi>0){ newH={...newH,hp:Math.max(0,newH.hp-result.danoHeroi)}; newLog=[`💔 Tomou ${result.danoHeroi}❤️`,...newLog.slice(0,29)]; }
+      if(result.ganhouOuro>0) newH={...newH,ouro:(newH.ouro||0)+result.ganhouOuro};
       if(result.curaHeroi>0) newH={...newH,hp:Math.min(newH.maxHp,newH.hp+result.curaHeroi)};
-      if(result.custoEnergia>0) newH={...newH,en:Math.max(0,newH.en-result.custoEnergia)};
-      if(result.ganhouOuro>0){ newH={...newH,ouro:(newH.ouro||0)+result.ganhouOuro}; newLog=[`💰 +${result.ganhouOuro} ouros`,...newLog.slice(0,29)]; }
-      let rpts=(newH.rankPts||0)+(result.rankPts||0);
-      let rank=newH.rank;
-      if(rpts>=(RANK_PTS[rank]||5)&&RANKS.indexOf(rank)<RANKS.length-1){ rank=RANKS[RANKS.indexOf(rank)+1]; rpts=0; newLog=[`🎉 Subiu para ${RANK_EMOJI[rank]}!`,...newLog.slice(0,29)]; }
-      newH={...newH,rank,rankPts:rpts,maestria:(newH.maestria||1)+(result.maestriaPts||0)};
-      const newUser={...user,hero:newH,log:newLog,narracao:narr,lastSeen:Date.now()};
+      const newUser={...user,hero:newH,narracao:result.narracao||"",lastSeen:Date.now()};
       await saveUser(user.username,newUser); onUpdate(newUser); setAcao(""); setDado(null);
-    } catch(err){ setNarracao("O Mestre hesita. Tente novamente."); }
+    } catch(e){ setNarracao("O Mestre hesita. Tente novamente."); }
     setSubmitting(false);
   }
 
-  const capAtual = grupo ? HISTORIA[grupo.historiaCapitulo] : null;
-  const tabs=[{id:"mundo",label:"🌍 Mundo"},{id:"ficha",label:"📋 Ficha"},{id:"log",label:"📜 Log"}];
+  if(batalhaAtiva) return <BatalhaScreen user={user} inimigo={batalhaAtiva}
+    onUpdate={u=>{ onUpdate(u); }}
+    onFim={(vitoria)=>{ setBatalhaAtiva(null); if(!vitoria){ const newH={...user.hero,regiao:"varnok"}; const u={...user,hero:newH}; onUpdate(u); saveUser(user.username,u); } }}/>;
+
+  const tabs=[{id:"mundo",label:"🌍"},{id:"ficha",label:"📋"},{id:"log",label:"📜"}];
 
   return <div style={{minHeight:"100vh",background:T.bg,color:T.text,fontFamily:"Georgia,serif"}}>
     {showDice&&diceVal&&<DiceOverlay value={diceVal} onClose={closeDice}/>}
     {showMapa&&<MapaModal hero={h} onViajar={viajar} onFechar={()=>setShowMapa(false)}/>}
     {showGrupo&&<GrupoModal user={user} onFechar={()=>setShowGrupo(false)} onSave={u=>{onUpdate(u);setShowGrupo(false);}}/>}
-    {showHistoria&&grupo&&<HistoriaModal grupo={grupo} user={user} membrosData={membrosData} onEscolha={handleEscolha} onFechar={()=>setShowHistoria(false)}/>}
+    {showInv&&<InventarioModal user={user} onFechar={()=>setShowInv(false)} onUpdate={u=>{onUpdate(u);}}/>}
+    {showFerreiro&&<FerreiroModal user={user} onFechar={()=>setShowFerreiro(false)} onUpdate={u=>{onUpdate(u);}}/>}
 
-    <div style={{borderBottom:`1px solid ${T.border}`,padding:"8px 13px",display:"flex",alignItems:"center",gap:7,flexWrap:"wrap"}}>
+    <div style={{borderBottom:`1px solid ${T.border}`,padding:"8px 12px",display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>
       <div style={{fontSize:14,color:T.gold,fontWeight:700,letterSpacing:3}}>⚔️ ELARIS</div>
       <div style={{display:"flex",gap:3}}>
-        {tabs.map(t=><button key={t.id} onClick={()=>setTab(t.id)} style={{background:tab===t.id?"#1e1e28":"transparent",border:tab===t.id?`1px solid ${T.border}`:"1px solid transparent",color:tab===t.id?T.gold:T.muted,borderRadius:6,padding:"3px 8px",fontSize:10,cursor:"pointer",fontFamily:"inherit"}}>{t.label}</button>)}
+        {tabs.map(t=><button key={t.id} onClick={()=>setTab(t.id)} style={{background:tab===t.id?"#1e1e28":"transparent",border:tab===t.id?`1px solid ${T.border}`:"1px solid transparent",color:tab===t.id?T.gold:T.muted,borderRadius:6,padding:"4px 9px",fontSize:14,cursor:"pointer"}}>{t.label}</button>)}
       </div>
       <div style={{marginLeft:"auto",display:"flex",alignItems:"center",gap:5}}>
-        <span style={{fontSize:10,color:h.cor}}>{h.emoji} {user.username}</span>
+        <span style={{fontSize:9,color:h.cor}}>{h.emoji} Nv.{h.nivel||1}</span>
+        <span style={{fontSize:9,color:T.gold}}>💰{h.ouro}</span>
         <button onClick={onLogout} style={{background:"transparent",border:`1px solid ${T.border}`,color:T.muted,borderRadius:5,padding:"2px 7px",fontSize:9,cursor:"pointer"}}>Sair</button>
       </div>
     </div>
 
     {tab==="mundo"&&<div style={{display:"flex",height:"calc(100vh - 46px)"}}>
-      <div style={{width:175,borderRight:`1px solid ${T.border}`,padding:9,overflowY:"auto",flexShrink:0}}>
-        <div style={{background:`${regiao.cor}10`,border:`1px solid ${regiao.cor}33`,borderRadius:9,padding:"8px 10px",marginBottom:9}}>
-          <div style={{fontSize:11,color:regiao.cor,fontWeight:700}}>{regiao.emoji} {regiao.nome}</div>
-          <div style={{fontSize:9,color:T.muted,marginTop:1}}>⚠️ {regiao.perigo}</div>
+      <div style={{width:165,borderRight:`1px solid ${T.border}`,padding:8,overflowY:"auto",flexShrink:0}}>
+        <div style={{background:`${regiao.cor}10`,border:`1px solid ${regiao.cor}33`,borderRadius:8,padding:"7px 9px",marginBottom:8}}>
+          <div style={{fontSize:10,color:regiao.cor,fontWeight:700}}>{regiao.emoji} {regiao.nome}</div>
+          <div style={{fontSize:8,color:T.muted}}>⚠️ {regiao.perigo}</div>
         </div>
-        <div style={{display:"flex",flexDirection:"column",gap:4,marginBottom:9}}>
-          <button onClick={()=>setShowMapa(true)} style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:7,color:T.gold,fontSize:10,padding:"6px",cursor:"pointer",fontFamily:"inherit"}}>🗺️ Mapa</button>
-          <button onClick={()=>setShowGrupo(true)} style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:7,color:T.blue,fontSize:10,padding:"6px",cursor:"pointer",fontFamily:"inherit"}}>👥 Grupo{user.grupo?" ✓":""}</button>
-          {grupo&&<button onClick={()=>setShowHistoria(true)} style={{background:`${capAtual?.cor||T.purple}10`,border:`1px solid ${capAtual?.cor||T.purple}44`,borderRadius:7,color:capAtual?.cor||T.purple,fontSize:10,padding:"6px",cursor:"pointer",fontFamily:"inherit"}}>
-            📖 História {grupo.historiaCompleta?"✅":`Cap.${grupo.historiaCapitulo+1}`}
-          </button>}
-          {emVarnok&&<button onClick={()=>setShowGuilda(true)} style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:7,color:T.gold,fontSize:10,padding:"6px",cursor:"pointer",fontFamily:"inherit"}}>⚔️ Guilda</button>}
+        <div style={{display:"flex",flexDirection:"column",gap:4,marginBottom:8}}>
+          <button onClick={()=>setShowMapa(true)} style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:6,color:T.gold,fontSize:10,padding:"5px",cursor:"pointer",fontFamily:"inherit"}}>🗺️ Mapa</button>
+          <button onClick={()=>setShowGrupo(true)} style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:6,color:T.blue,fontSize:10,padding:"5px",cursor:"pointer",fontFamily:"inherit"}}>👥 Grupo{user.grupo?" ✓":""}</button>
+          <button onClick={()=>setShowInv(true)} style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:6,color:T.purple,fontSize:10,padding:"5px",cursor:"pointer",fontFamily:"inherit"}}>🎒 Inventário{(h.pontosStatus||0)>0?" 🔴":""}</button>
+          {emVarnok&&<button onClick={()=>setShowFerreiro(true)} style={{background:T.surface,border:`1px solid ${T.orange}44`,borderRadius:6,color:T.orange,fontSize:10,padding:"5px",cursor:"pointer",fontFamily:"inherit"}}>⚒️ Ferreiro</button>}
+          {!emVarnok&&<button onClick={iniciarBatalhaComBoss} style={{background:"#0f0606",border:`1px solid ${T.red}44`,borderRadius:6,color:T.red,fontSize:10,padding:"5px",cursor:"pointer",fontFamily:"inherit"}}>👑 Enfrentar Boss</button>}
         </div>
-
-        {/* Hero mini */}
-        <div style={{background:T.surface,border:`1px solid ${h.cor}22`,borderRadius:9,padding:"8px 9px",marginBottom:7}}>
-          <div style={{fontSize:10,color:h.cor,fontWeight:600,marginBottom:5}}>{h.emoji} {h.nome}</div>
-          <div style={{marginBottom:4}}><div style={{fontSize:7,color:T.muted,marginBottom:2}}>HP</div><PipRow val={h.hp} max={h.maxHp} color={T.red} size={6}/></div>
-          <div style={{marginBottom:5}}><div style={{fontSize:7,color:T.muted,marginBottom:2}}>EN</div><PipRow val={h.en} max={h.maxEn} color={T.blue} size={6}/></div>
+        <div style={{background:T.surface,border:`1px solid ${h.cor}22`,borderRadius:8,padding:"8px 9px"}}>
+          <div style={{fontSize:10,color:h.cor,fontWeight:600,marginBottom:5}}>{h.emoji} Nv.{h.nivel||1}</div>
+          <div style={{marginBottom:4}}><div style={{fontSize:7,color:T.muted,marginBottom:1}}>HP</div><PipRow val={h.hp} max={Math.min(h.maxHp,10)} color={T.red} size={6}/></div>
+          <div style={{marginBottom:4}}><div style={{fontSize:7,color:T.muted,marginBottom:1}}>EN</div><PipRow val={h.en} max={Math.min(h.maxEn,10)} color={T.blue} size={6}/></div>
           <RankBar rank={h.rank} pts={h.rankPts||0}/>
-          <div style={{fontSize:9,color:T.gold,marginTop:4}}>💰 {h.ouro}</div>
+          <div style={{marginTop:4}}><ExpBar exp={h.exp||0} proxLevel={h.expProxLevel||100}/></div>
+          {(h.pontosStatus||0)>0&&<div style={{fontSize:8,color:T.purple,marginTop:4}}>✨ {h.pontosStatus} pontos!</div>}
         </div>
-
-        {/* Outros membros */}
-        {grupo&&Object.entries(membrosData).filter(([m])=>m!==user.username).map(([m,md])=>{
-          const mh=md.hero; const mr=REGIOES[mh.regiao];
-          return <div key={m} style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:8,padding:"7px 9px",marginBottom:5}}>
-            <div style={{fontSize:10,color:mh.cor,fontWeight:600}}>{mh.emoji} {m}</div>
-            <div style={{fontSize:9,color:T.muted}}>{mr?.emoji} {mr?.nome}</div>
-            <div style={{marginTop:3}}><PipRow val={mh.hp} max={mh.maxHp} color={T.red} size={5}/></div>
-          </div>;
-        })}
-
-        {/* Aviso história */}
-        {grupo&&capAtual&&(()=>{
-          const aguardando=grupo.members.filter(m=>{const md=membrosData[m];return !md||md.hero.regiao!==capAtual.regiaoNecessaria;});
-          if(aguardando.length>0) return <div style={{background:`${T.purple}10`,border:`1px solid ${T.purple}33`,borderRadius:8,padding:"7px 9px",marginTop:4}}>
-            <div style={{fontSize:9,color:T.purple,fontWeight:600,marginBottom:3}}>📖 História bloqueada</div>
-            <div style={{fontSize:8,color:T.muted}}>Todos precisam ir para {REGIOES[capAtual.regiaoNecessaria]?.emoji} {REGIOES[capAtual.regiaoNecessaria]?.nome}</div>
-          </div>;
-          return null;
-        })()}
+        {/* Inimigos da área */}
+        {!emVarnok&&<div style={{marginTop:8}}>
+          <div style={{fontSize:8,color:T.muted,letterSpacing:2,marginBottom:5}}>INIMIGOS DA ÁREA</div>
+          {(INIMIGOS_POR_AREA[h.regiao]||[]).slice(0,4).map(e=>(
+            <div key={e.id} style={{fontSize:9,color:e.tipo==="boss"?T.purple:e.tipo==="elite"?T.orange:T.muted,marginBottom:2}}>
+              {e.emoji} {e.nome} <span style={{color:T.muted}}>({e.tipo})</span>
+            </div>
+          ))}
+        </div>}
       </div>
 
-      <div style={{flex:1,padding:"14px 17px",overflowY:"auto"}}>
+      <div style={{flex:1,padding:"14px 16px",overflowY:"auto"}}>
         <div style={{fontSize:16,color:T.gold,fontWeight:700,marginBottom:2}}>{regiao.emoji} {regiao.nome}</div>
-        <div style={{fontSize:10,color:T.muted,marginBottom:9}}>{regiao.desc}</div>
-        {regiao.locais&&<div style={{display:"flex",flexWrap:"wrap",gap:4,marginBottom:10}}>
-          {regiao.locais.map(l=><span key={l} style={{fontSize:9,padding:"2px 7px",background:T.surface,border:`1px solid ${T.border}`,borderRadius:5,color:T.muted}}>📍 {l}</span>)}
-        </div>}
+        <div style={{fontSize:10,color:T.muted,marginBottom:10}}>{regiao.desc}</div>
         <div style={{height:1,background:`linear-gradient(90deg,transparent,${T.border},transparent)`,marginBottom:10}}/>
         <div style={{fontSize:11,color:h.cor,fontWeight:700,marginBottom:7}}>{h.emoji} {h.nome} — o que você faz?</div>
         <textarea value={acao} onChange={e=>setAcao(e.target.value)}
-          placeholder={emVarnok?"Fale com NPCs, compre itens, descanse...":"Explore, combata, investigue..."}
-          style={{width:"100%",minHeight:72,background:T.surface,border:`1px solid ${T.border}`,borderRadius:9,color:T.text,fontFamily:"Georgia,serif",fontSize:13,padding:10,resize:"vertical",outline:"none",boxSizing:"border-box",marginBottom:8}}/>
-        <div style={{display:"flex",flexWrap:"wrap",alignItems:"center",gap:7,marginBottom:9}}>
-          <button onClick={rollDice} disabled={submitting} style={{background:T.gold,border:"none",borderRadius:7,color:"#07070c",fontWeight:700,fontSize:12,padding:"8px 14px",cursor:"pointer",fontFamily:"inherit"}}>🎲 Rolar d20</button>
+          placeholder={emVarnok?"Fale com NPCs, descanse, compre itens...":"Explore, investigue, prepare emboscada..."}
+          style={{width:"100%",minHeight:70,background:T.surface,border:`1px solid ${T.border}`,borderRadius:9,color:T.text,fontFamily:"Georgia,serif",fontSize:12,padding:9,resize:"vertical",outline:"none",boxSizing:"border-box",marginBottom:7}}/>
+        <div style={{display:"flex",flexWrap:"wrap",alignItems:"center",gap:7,marginBottom:8}}>
+          <button onClick={rollDice} disabled={submitting} style={{background:T.gold,border:"none",borderRadius:7,color:"#07070c",fontWeight:700,fontSize:12,padding:"7px 13px",cursor:"pointer",fontFamily:"inherit"}}>🎲 d20</button>
           <button onClick={confirmar} disabled={!dado||!acao.trim()||submitting}
-            style={{background:dado&&acao.trim()&&!submitting?"#1a2e1a":"#111",border:`1px solid ${dado&&acao.trim()&&!submitting?T.green:"#222"}`,color:dado&&acao.trim()&&!submitting?T.green:"#333",borderRadius:7,fontWeight:700,fontSize:12,padding:"8px 14px",cursor:dado&&acao.trim()&&!submitting?"pointer":"default",fontFamily:"inherit"}}>
-            {submitting?"⏳ Narrando...":"✅ Confirmar"}
+            style={{background:dado&&acao.trim()&&!submitting?"#1a2e1a":"#111",border:`1px solid ${dado&&acao.trim()&&!submitting?T.green:"#222"}`,color:dado&&acao.trim()&&!submitting?T.green:"#333",borderRadius:7,fontWeight:700,fontSize:12,padding:"7px 13px",cursor:dado&&acao.trim()&&!submitting?"pointer":"default",fontFamily:"inherit"}}>
+            {submitting?"⏳":"✅ Confirmar"}
           </button>
           {dado&&<div style={{display:"flex",alignItems:"center",gap:5}}>
-            <span style={{fontSize:26,color:dadoColor,fontWeight:700,textShadow:`0 0 12px ${dadoColor}66`}}>{dado}</span>
-            <span style={{fontSize:11,color:dadoColor,fontWeight:600}}>{dadoLabel}</span>
+            <span style={{fontSize:24,color:dadoColor,fontWeight:700}}>{dado}</span>
+            <span style={{fontSize:10,color:dadoColor}}>{dadoLabel}</span>
           </div>}
         </div>
-        {narracao&&<div style={{background:"#0a0a12",border:`1px solid ${T.gold}33`,borderRadius:11,padding:"11px 13px"}}>
-          <div style={{fontSize:9,color:T.goldDim,letterSpacing:3,marginBottom:6}}>⚔️ O MESTRE NARRA</div>
-          {narracao.split("\n\n").map((p,i)=><p key={i} style={{color:T.text,lineHeight:1.85,fontSize:13,margin:"0 0 7px"}}>{p}</p>)}
+        {narracao&&<div style={{background:"#0a0a12",border:`1px solid ${T.gold}33`,borderRadius:10,padding:"10px 13px"}}>
+          <div style={{fontSize:8,color:T.goldDim,letterSpacing:3,marginBottom:6}}>⚔️ O MESTRE NARRA</div>
+          {narracao.split("\n\n").map((p,i)=><p key={i} style={{color:T.text,lineHeight:1.85,fontSize:12,margin:"0 0 6px"}}>{p}</p>)}
         </div>}
         <div ref={bottomRef}/>
       </div>
     </div>}
 
-    {tab==="ficha"&&<div style={{padding:14,maxWidth:380,margin:"0 auto"}}>
+    {tab==="ficha"&&<div style={{padding:12,maxWidth:360,margin:"0 auto"}}>
       <div style={{background:T.surface,border:`1px solid ${h.cor}33`,borderRadius:12,padding:14}}>
-        <div style={{fontSize:15,color:h.cor,fontWeight:700,marginBottom:3}}>{h.emoji} {h.nome}</div>
-        <div style={{fontSize:10,color:T.muted,letterSpacing:1,marginBottom:10}}>{h.classe} · {h.espec} · {h.poder}</div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:10}}>
+        <div style={{fontSize:15,color:h.cor,fontWeight:700,marginBottom:2}}>{h.emoji} {h.nome}</div>
+        <div style={{fontSize:10,color:T.muted,marginBottom:10}}>{h.classe} · Nível {h.nivel||1} · Parry {Math.round((h.parryChance||0.05)*100)}%</div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:7,marginBottom:10}}>
           {[["❤️ HP",h.hp,h.maxHp,T.red],["🔵 EN",h.en,h.maxEn,T.blue]].map(([lbl,v,mx,col])=>(
-            <div key={lbl} style={{padding:"8px",background:"#0a0a14",borderRadius:7,border:`1px solid ${col}22`}}>
-              <div style={{fontSize:9,color:T.muted,marginBottom:4}}>{lbl} {v}/{mx}</div>
-              <PipRow val={v} max={mx} color={col} size={8}/>
+            <div key={lbl} style={{padding:"7px",background:"#0a0a14",borderRadius:7,border:`1px solid ${col}22`}}>
+              <div style={{fontSize:9,color:T.muted,marginBottom:3}}>{lbl} {v}/{mx}</div>
+              <PipRow val={Math.min(v,10)} max={Math.min(mx,10)} color={col} size={7}/>
             </div>
           ))}
         </div>
-        {Object.entries(h.attrs).map(([k,v])=>(
-          <div key={k} style={{display:"flex",alignItems:"center",gap:6,marginBottom:5}}>
-            <span style={{fontSize:9,color:T.muted,width:54,flexShrink:0}}>{k}</span>
-            <div style={{flex:1,height:3,background:"#111",borderRadius:2}}><div style={{width:`${(v/10)*100}%`,height:"100%",background:h.cor}}/></div>
-            <span style={{fontSize:9,color:T.muted,width:10,textAlign:"right"}}>{v}</span>
+        {Object.keys(h.attrs).map(attr=>(
+          <div key={attr} style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}>
+            <span style={{fontSize:9,color:T.muted,width:54,flexShrink:0}}>{ATTR_NOMES[attr]}</span>
+            <div style={{flex:1,height:3,background:"#111",borderRadius:2}}><div style={{width:`${Math.min(100,getAttrTotal(h,attr)*10)}%`,height:"100%",background:h.cor}}/></div>
+            <span style={{fontSize:10,color:T.gold,width:18,textAlign:"right"}}>{getAttrTotal(h,attr)}</span>
           </div>
         ))}
-        <div style={{marginTop:10}}><RankBar rank={h.rank} pts={h.rankPts||0}/></div>
-        <div style={{display:"flex",gap:8,marginTop:10}}>
-          <div style={{flex:1,padding:"6px 9px",background:"#080f08",border:"1px solid #1a2a1a",borderRadius:7}}>
-            <div style={{fontSize:8,color:"#4a8a4a"}}>✅ ESPEC.</div><div style={{fontSize:10,color:"#6aaa6a"}}>{h.espec}</div>
-          </div>
-          <div style={{flex:1,padding:"6px 9px",background:"#0f0808",border:"1px solid #2a1a1a",borderRadius:7}}>
-            <div style={{fontSize:8,color:"#8a4a4a"}}>❌ FRAQ.</div><div style={{fontSize:10,color:"#aa6a6a"}}>{h.fraq}</div>
-          </div>
+        <div style={{marginTop:8}}><RankBar rank={h.rank} pts={h.rankPts||0}/></div>
+        <div style={{marginTop:6}}><ExpBar exp={h.exp||0} proxLevel={h.expProxLevel||100}/></div>
+        <div style={{marginTop:8,display:"flex",gap:10,flexWrap:"wrap",fontSize:10}}>
+          <span style={{color:T.gold}}>💰 {h.ouro}</span>
+          <span style={{color:T.orange}}>⚔️ +{getDanoBonus(h)} dano</span>
+          <span style={{color:T.blue}}>🛡️ +{getDefesaBonus(h)} def</span>
+          {(h.pontosStatus||0)>0&&<span style={{color:T.purple}}>✨ {h.pontosStatus} pts status</span>}
         </div>
-        <div style={{marginTop:8,fontSize:11,color:T.gold}}>💰 {h.ouro} ouros · ⭐ Maestria {h.maestria}</div>
       </div>
     </div>}
 
-    {tab==="log"&&<div style={{padding:14,maxWidth:460,margin:"0 auto"}}>
-      <div style={{fontSize:12,color:T.gold,fontWeight:700,letterSpacing:2,marginBottom:10}}>📜 LOG</div>
+    {tab==="log"&&<div style={{padding:12,maxWidth:440,margin:"0 auto"}}>
+      <div style={{fontSize:11,color:T.gold,fontWeight:700,letterSpacing:2,marginBottom:9}}>📜 LOG</div>
       {(!user.log||user.log.length===0)&&<div style={{color:T.muted,fontStyle:"italic",fontSize:12}}>Nenhuma ação registrada.</div>}
-      {(user.log||[]).map((e,i)=><div key={i} style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:7,padding:"7px 10px",marginBottom:5,color:T.text,fontSize:12}}>{e}</div>)}
+      {(user.log||[]).map((e,i)=><div key={i} style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:7,padding:"6px 10px",marginBottom:5,color:T.text,fontSize:11}}>{e}</div>)}
     </div>}
   </div>;
 }
 
-// ── APP ───────────────────────────────────────────────────
 export default function App() {
   const [user,setUser]=useState(null);
-  return !user
-    ? <AuthScreen onLogin={setUser}/>
-    : <GameScreen user={user} onUpdate={setUser} onLogout={()=>setUser(null)}/>;
+  return !user ? <AuthScreen onLogin={setUser}/> : <GameScreen user={user} onUpdate={setUser} onLogout={()=>setUser(null)}/>;
 }
